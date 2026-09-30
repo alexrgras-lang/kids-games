@@ -1,0 +1,556 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Camila &amp; Luca's Word Quest</title>
+<style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif;background:#faf9f7}img{max-width:100%}[hidden]{display:none!important}</style>
+</head>
+<body>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@500;700;800&display=swap">
+<style>
+/* Layout: profile picker → per-kid home (word tiles + game doors) → one focused game panel. Accent hue switches per kid. */
+:root {
+  --bg: #e9f0ff;          /* pale periwinkle sky */
+  --panel: #ffffff;
+  --panel-edge: #cfd9f5;
+  --soft: #f3f6ff;
+  --fg: #1e2a5a;          /* deep navy ink */
+  --muted: #6b769c;
+  --accent: #ff6b4a;      /* coral (Camila) */
+  --accent-dark: #d84f31;
+  --accent-ink: #ffffff;
+  --gold: #ffc93c;        /* stars */
+  --mint: #2fbf85;        /* correct */
+  --mint-dark: #1f9a68;
+  --rose: #ff4f7b;        /* try again */
+  --tile: #fff5cc;        /* letter tiles */
+  --tile-edge: #f0c94a;
+  --display: "Fredoka", "Arial Rounded MT Bold", "Nunito", sans-serif;
+  --body: "Nunito", "Segoe UI", system-ui, sans-serif;
+  color-scheme: light;
+}
+:root[data-kid="luca"] { --bg: #e6f7f0; --panel-edge: #bfe6d4; --soft: #eefaf4; --accent: #2f9bff; --accent-dark: #1c73c4; --tile: #fff0d6; --tile-edge: #f4b860; }
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  margin: 0; background: var(--bg); color: var(--fg);
+  font-family: var(--body); font-size: 18px; line-height: 1.4;
+  padding-inline: 16px; padding-block: 16px 32px;
+}
+.wrap { max-width: 720px; margin: 0 auto; display: grid; gap: 18px; }
+header { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+h1 { font-family: var(--display); font-weight: 700; font-size: clamp(30px, 7vw, 44px); margin: 0; line-height: 1.05; text-wrap: balance; }
+h1 span { color: var(--accent); }
+.sub { color: var(--muted); font-weight: 700; font-size: 15px; margin-top: 4px; }
+.stars { display: flex; align-items: center; gap: 6px; background: var(--panel); border-radius: 999px; padding: 8px 14px; font-family: var(--display); font-weight: 700; font-size: 22px; font-variant-numeric: tabular-nums; box-shadow: 0 4px 0 var(--panel-edge); }
+.stars svg { width: 26px; height: 26px; }
+.panel { background: var(--panel); border-radius: 22px; padding: 22px; box-shadow: 0 6px 0 var(--panel-edge); }
+.panel + .panel { margin-top: 18px; }
+h2 { font-family: var(--display); font-weight: 600; font-size: 24px; margin: 0 0 6px; }
+.hint { color: var(--muted); font-weight: 700; font-size: 15px; margin: 0 0 14px; }
+.center { text-align: center; }
+
+/* profile picker */
+.kids { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
+.kid { border: 0; border-radius: 24px; padding: 26px 20px; cursor: pointer; color: var(--fg); background: var(--panel); box-shadow: 0 6px 0 var(--panel-edge); display: grid; justify-items: center; gap: 8px; text-align: center; }
+.kid:hover { transform: translateY(-3px); }
+.kid .face { width: 96px; height: 96px; border-radius: 50%; display: grid; place-items: center; font-family: var(--display); font-size: 44px; font-weight: 700; color: #fff; }
+.kid[data-kid="camila"] .face { background: #ff6b4a; } .kid[data-kid="luca"] .face { background: #2f9bff; }
+.kid b { font-family: var(--display); font-size: 28px; font-weight: 600; }
+.kid small { color: var(--muted); font-weight: 700; font-size: 15px; }
+.kid .kstars { display: inline-flex; align-items: center; gap: 4px; font-family: var(--display); font-size: 18px; }
+.kid .kstars svg { width: 18px; height: 18px; }
+
+.words { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px; }
+.words.big { grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); }
+.word { border: 0; border-radius: 14px; background: var(--tile); border-bottom: 4px solid var(--tile-edge); font-family: var(--display); font-size: 20px; font-weight: 600; color: var(--fg); padding: 12px 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; }
+.words.big .word { font-size: 28px; padding: 16px 8px; }
+.word:hover { transform: translateY(-2px); }
+.word .e { color: var(--accent); }
+.word .done { width: 14px; height: 14px; color: var(--mint); flex: none; }
+.doors { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
+.door { border: 0; border-radius: 18px; padding: 18px 14px; text-align: left; cursor: pointer; color: var(--fg); background: var(--soft); border-bottom: 5px solid var(--panel-edge); display: grid; gap: 4px; }
+.door:hover { filter: brightness(.97); }
+.door b { font-family: var(--display); font-weight: 600; font-size: 20px; }
+.door small { color: var(--muted); font-weight: 700; font-size: 14px; }
+.door .num { font-family: var(--display); font-size: 30px; line-height: 1; }
+.door:nth-child(1) { border-bottom-color: #ffb199; } .door:nth-child(2) { border-bottom-color: #a5e3c9; }
+.door:nth-child(3) { border-bottom-color: #ffe08a; } .door:nth-child(4) { border-bottom-color: #c9b8ff; }
+button:focus-visible, input:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.btn { border: 0; border-radius: 999px; font-family: var(--display); font-weight: 600; font-size: 20px; padding: 12px 26px; cursor: pointer; background: var(--accent); color: var(--accent-ink); border-bottom: 4px solid var(--accent-dark); }
+.btn:active { transform: translateY(2px); border-bottom-width: 2px; }
+.btn.ghost { background: var(--soft); color: var(--fg); border-bottom-color: var(--panel-edge); }
+.btn.mint { background: var(--mint); border-bottom-color: var(--mint-dark); }
+.btn.huge { font-size: 26px; padding: 18px 34px; }
+.btn:disabled { opacity: .5; cursor: default; }
+.row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.between { justify-content: space-between; }
+.progress { height: 12px; background: #e6ebf8; border-radius: 999px; overflow: hidden; }
+.progress i { display: block; height: 100%; background: var(--gold); width: 0; transition: width .3s; }
+.speak { display: inline-flex; align-items: center; justify-content: center; gap: 10px; width: 100%; padding: 26px 20px; border-radius: 20px; border: 3px dashed var(--panel-edge); background: var(--soft); color: var(--fg); font-family: var(--display); font-size: 24px; font-weight: 600; cursor: pointer; }
+.speak svg { width: 40px; height: 40px; color: var(--accent); }
+.sentence { font-size: 20px; text-align: center; margin: 14px 0 6px; font-weight: 700; }
+.sentence u { text-decoration: none; border-bottom: 3px solid var(--accent); padding: 0 12px; color: var(--accent); letter-spacing: 6px; }
+input.spell { width: 100%; font-family: var(--display); font-size: 34px; font-weight: 600; letter-spacing: 4px; text-align: center; padding: 14px; border-radius: 16px; border: 3px solid var(--panel-edge); color: var(--fg); background: #fff; text-transform: lowercase; }
+.slots, .tiles { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin: 14px 0; }
+.slot, .tile { width: 52px; height: 60px; border-radius: 12px; display: grid; place-items: center; font-family: var(--display); font-size: 32px; font-weight: 600; }
+.slots.xl .slot, .tiles.xl .tile { width: 68px; height: 78px; font-size: 42px; }
+.slot { background: var(--soft); border: 3px dashed var(--panel-edge); color: var(--fg); }
+.slot.filled { background: var(--tile); border: 3px solid var(--tile-edge); }
+.slot.blank { border-color: var(--accent); }
+.slot.ghost { color: #c5cde6; border-style: dotted; }
+.tile { background: var(--tile); border: 0; border-bottom: 4px solid var(--tile-edge); color: var(--fg); cursor: pointer; }
+.tile:active { transform: translateY(2px); }
+.tile.used { visibility: hidden; }
+.choices { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; max-width: 360px; margin: 0 auto; }
+.choices .tile { width: auto; height: 64px; }
+.cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 16px 0; }
+.card { border: 0; border-radius: 20px; background: var(--tile); border-bottom: 6px solid var(--tile-edge); color: var(--fg); font-family: var(--display); font-size: clamp(30px, 9vw, 48px); font-weight: 700; padding: 28px 6px; cursor: pointer; min-width: 0; overflow-wrap: anywhere; }
+.card:active { transform: translateY(3px); }
+.card.out { opacity: .25; pointer-events: none; }
+.card.win { background: #d8f5e8; border-bottom-color: var(--mint); }
+.flash { border-radius: 24px; background: var(--tile); border-bottom: 8px solid var(--tile-edge); padding: 40px 16px; text-align: center; font-family: var(--display); font-size: clamp(64px, 22vw, 120px); font-weight: 700; line-height: 1; cursor: pointer; margin: 10px 0; }
+.feedback { min-height: 60px; text-align: center; font-family: var(--display); font-size: 24px; font-weight: 600; display: grid; place-items: center; margin-top: 10px; }
+.feedback.good { color: var(--mint); } .feedback.bad { color: var(--rose); }
+.feedback .fix { font-family: var(--display); font-size: 34px; letter-spacing: 3px; }
+.feedback .fix .miss { color: var(--rose); text-decoration: underline; }
+.bigword { text-align: center; font-family: var(--display); font-size: clamp(44px, 14vw, 72px); font-weight: 700; letter-spacing: 4px; margin: 10px 0; }
+.bigword .v, .bigword .e { color: var(--accent); }
+.two { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.two .btn { width: 100%; padding: 18px 10px; font-size: 19px; white-space: normal; line-height: 1.2; }
+.two .btn.wand { background: #7c5cff; border-bottom-color: #5a3fd6; }
+.two .btn.sneak { background: #ff9f1c; border-bottom-color: #d67f0a; }
+.rule { background: var(--soft); border-radius: 14px; padding: 12px 14px; font-size: 16px; font-weight: 700; color: var(--muted); margin-top: 10px; }
+.rule b { color: var(--fg); }
+.finish { text-align: center; }
+.finish .big { font-family: var(--display); font-size: 40px; font-weight: 700; margin: 8px 0; }
+.finish .trophy { font-size: 64px; }
+canvas#confetti { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+@media (max-width: 420px) { .slot, .tile { width: 42px; height: 52px; font-size: 26px; } .slots.xl .slot, .tiles.xl .tile { width: 54px; height: 64px; font-size: 34px; } .choices .tile { width: auto; } .panel { padding: 16px; } .card { padding: 22px 4px; } }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+.shake { animation: shake .35s; }
+@keyframes shake { 25% { transform: translateX(-6px);} 75% { transform: translateX(6px);} }
+.pop { animation: pop .35s; }
+@keyframes pop { 50% { transform: scale(1.12);} }
+</style>
+
+<div class="wrap">
+  <header>
+    <div>
+      <h1 id="title">Word <span>Quest</span></h1>
+      <div class="sub" id="subtitle">Who's playing today?</div>
+    </div>
+    <div class="stars" id="starBox" hidden aria-label="Stars earned"><svg viewBox="0 0 24 24" fill="#ffc93c"><path d="M12 2l3 6.5 7 .8-5.2 4.8 1.5 7L12 17.5 5.7 21l1.5-7L2 9.3l7-.8z"/></svg><span id="starCount">0</span></div>
+  </header>
+
+  <section id="pick">
+    <div class="kids" id="kids"></div>
+  </section>
+
+  <section id="home" hidden>
+    <div class="panel">
+      <div class="row between" style="margin-bottom:6px">
+        <h2 id="listTitle">Your words</h2>
+        <button class="btn ghost" id="switchBtn" style="font-size:16px;padding:8px 16px">Switch player</button>
+      </div>
+      <p class="hint" id="listHint"></p>
+      <div class="words" id="wordGrid"></div>
+    </div>
+    <div class="panel">
+      <h2>Pick a game</h2>
+      <p class="hint" id="gameHint"></p>
+      <div class="doors" id="doors"></div>
+    </div>
+  </section>
+
+  <section id="game" hidden>
+    <div class="panel">
+      <div class="row between" style="margin-bottom:12px">
+        <button class="btn ghost" id="backBtn">← Home</button>
+        <span class="sub" id="counter">1 of 15</span>
+      </div>
+      <div class="progress"><i id="bar"></i></div>
+      <div id="stage" style="margin-top:16px"></div>
+      <div class="feedback" id="feedback"></div>
+      <div class="row" style="justify-content:center;margin-top:8px" id="actions"></div>
+    </div>
+  </section>
+</div>
+<canvas id="confetti" hidden></canvas>
+
+<script>
+/* ===================== WEEKLY LISTS: swap these each week ===================== */
+const PROFILES = {
+  camila: {
+    name: "Camila", initial: "C", tagline: "Spelling words",
+    label: "Week of 9/28 · Final e words · Test Friday 10/2",
+    listTitle: "Your 15 words", listHint: "Tap a word to hear it. Stars show words you've spelled right today.",
+    gameHint: "Each game goes through all 15 words. Earn a star for every word you get right.",
+    games: [
+      { id: "listen",   title: "Listen & Spell",        sub: "Hear the word, type it" },
+      { id: "missing",  title: "Missing Letters",       sub: "Fill in the blanks" },
+      { id: "scramble", title: "Letter Scramble",       sub: "Unscramble the tiles" },
+      { id: "magic",    title: "Magic e or Sneaky e?",  sub: "Does the e do its job?" },
+    ],
+    words: [
+      { w: "place",    s: "Put the book back in its ___.",       magic: true,  why: "The e makes the a say its name: pl-A-ce." },
+      { w: "page",     s: "Turn to the next ___.",               magic: true,  why: "The e makes the a say its name: p-A-ge." },
+      { w: "slide",    s: "We went down the ___ at the park.",   magic: true,  why: "The e makes the i say its name: sl-I-de." },
+      { w: "these",    s: "___ cookies are for you.",            magic: true,  why: "The e makes the first e say its name: th-E-se." },
+      { w: "cute",     s: "The puppy is so ___.",                magic: true,  why: "The e makes the u say its name: c-U-te." },
+      { w: "hope",     s: "I ___ it is sunny tomorrow.",         magic: true,  why: "The e makes the o say its name: h-O-pe." },
+      { w: "cupcake",  s: "She ate a chocolate ___.",            magic: true,  why: "Two little words: cup + cake. The e makes the a in cake long." },
+      { w: "backbone", s: "Your ___ helps you stand up tall.",   magic: true,  why: "Two little words: back + bone. The e makes the o in bone long." },
+      { w: "bedtime",  s: "Brush your teeth before ___.",        magic: true,  why: "Two little words: bed + time. The e makes the i in time long." },
+      { w: "mistake",  s: "Everyone makes a ___ sometimes.",     magic: true,  why: "mis + take. The e makes the a in take long." },
+      { w: "dislike",  s: "I ___ cold soup.",                    magic: true,  why: "dis + like. The e makes the i in like long." },
+      { w: "have",     s: "We ___ two cats.",                    magic: false, why: "Sneaky! The a stays short (h-a-v). English words never end in v, so the e just tags along." },
+      { w: "come",     s: "___ play with me!",                   magic: false, why: "Sneaky! The o sounds like a short u (c-u-m). You just have to remember this one." },
+      { w: "done",     s: "I am ___ with my homework.",          magic: false, why: "Sneaky! The o sounds like a short u (d-u-n). Rhymes with come!" },
+      { w: "sure",     s: "Are you ___ you want to go?",         magic: false, why: "Sneaky! It sounds like 'shur'. The e is silent but the u isn't long." },
+    ],
+  },
+  luca: {
+    name: "Luca", initial: "L", tagline: "Sight words",
+    label: "Pre-K sight words · Set 1",
+    listTitle: "Your 20 sight words", listHint: "Tap a word to hear it. Stars show words you've found today.",
+    gameHint: "No typing. Listen, look, and tap. Every word you get earns a star.",
+    games: [
+      { id: "find",  title: "Find the Word", sub: "Hear it, tap it" },
+      { id: "copy",  title: "Build the Word", sub: "Match the letters" },
+      { id: "flash", title: "Flash Cards",    sub: "Read it, hear it" },
+    ],
+    /* Dolch pre-primer list, 20 highest-frequency words */
+    words: [
+      { w: "the",    s: "I see the dog." },
+      { w: "a",      s: "I have a red ball." },
+      { w: "I",      s: "I like to play." },
+      { w: "to",     s: "We go to the park." },
+      { w: "and",    s: "Mom and Dad." },
+      { w: "is",     s: "The cat is big." },
+      { w: "it",     s: "I can see it." },
+      { w: "in",     s: "The frog is in the pond." },
+      { w: "we",     s: "We can jump." },
+      { w: "me",     s: "Come play with me." },
+      { w: "my",     s: "This is my hat." },
+      { w: "you",    s: "I like you." },
+      { w: "go",     s: "Ready, set, go!" },
+      { w: "see",    s: "I see a bird." },
+      { w: "can",    s: "I can run fast." },
+      { w: "up",     s: "The balloon goes up." },
+      { w: "look",   s: "Look at the moon." },
+      { w: "play",   s: "Let's play outside." },
+      { w: "big",    s: "The truck is big." },
+      { w: "little", s: "The mouse is little." },
+    ],
+  },
+};
+/* ============================================================================= */
+
+const $ = (s) => document.querySelector(s);
+const shuffle = (a) => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const starSvg = '<svg viewBox="0 0 24 24" fill="#ffc93c"><path d="M12 2l3 6.5 7 .8-5.2 4.8 1.5 7L12 17.5 5.7 21l1.5-7L2 9.3l7-.8z"/></svg>';
+const speakerSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5L6 9H2v6h4l5 4z"/><path d="M15.5 8.5a5 5 0 010 7"/><path d="M18.5 5.5a9 9 0 010 13"/></svg>';
+
+/* Progress per kid, per list */
+function loadState(id) {
+  try {
+    const cur = localStorage.getItem(`wq-${id}-${PROFILES[id].label}`);
+    if (cur) return JSON.parse(cur);
+    if (id === "camila") { const old = localStorage.getItem("csq-" + PROFILES[id].label); if (old) return JSON.parse(old); } /* stars from the first version */
+  } catch (e) {}
+  return {};
+}
+function saveState() { try { localStorage.setItem(`wq-${kidId}-${kid.label}`, JSON.stringify(state)); } catch (e) {} }
+let kidId = null, kid = null, state = { stars: 0, mastered: {} }, WORDS = [];
+
+function addStar(word) {
+  state.stars = (state.stars || 0) + 1; state.mastered[word] = true; saveState();
+  const box = $("#starBox"); $("#starCount").textContent = state.stars;
+  box.classList.remove("pop"); void box.offsetWidth; box.classList.add("pop");
+}
+
+/* Speech */
+const canSpeak = "speechSynthesis" in window;
+function speak(text, rate) {
+  if (!canSpeak) return false;
+  try { speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(text); u.rate = rate || 0.85; u.lang = "en-US"; speechSynthesis.speak(u); return true; } catch (e) { return false; }
+}
+function sayWord(item) {
+  const sentence = item.s.includes("___") ? item.s.replace("___", item.w) : item.s;
+  speak(item.w + ". " + sentence + ". " + item.w + ".");
+}
+function praise() { return ["Yes!", "Nailed it!", "Super!", "You got it!", "Wow!", "Great job!"][Math.floor(Math.random() * 6)]; }
+
+/* Profile picker */
+function renderPick() {
+  document.documentElement.removeAttribute("data-kid");
+  $("#title").innerHTML = 'Word <span>Quest</span>'; $("#subtitle").textContent = "Who's playing today?";
+  $("#starBox").hidden = true; $("#pick").hidden = false; $("#home").hidden = true; $("#game").hidden = true;
+  $("#kids").innerHTML = Object.entries(PROFILES).map(([id, p]) => {
+    const st = loadState(id);
+    return `<button class="kid" data-kid="${id}"><span class="face">${p.initial}</span><b>${p.name}</b><small>${p.tagline} · ${p.words.length} words</small><span class="kstars">${starSvg} ${st.stars || 0}</span></button>`;
+  }).join("");
+}
+$("#kids").addEventListener("click", (e) => { const b = e.target.closest(".kid"); if (b) pickKid(b.dataset.kid); });
+$("#switchBtn").addEventListener("click", () => { try { localStorage.removeItem("wq-last"); } catch (e) {} renderPick(); });
+
+function pickKid(id) {
+  kidId = id; kid = PROFILES[id]; WORDS = kid.words; state = Object.assign({ stars: 0, mastered: {} }, loadState(id));
+  try { localStorage.setItem("wq-last", id); } catch (e) {}
+  document.documentElement.setAttribute("data-kid", id);
+  $("#title").innerHTML = `${kid.name}'s <span>Word Quest</span>`; $("#subtitle").textContent = kid.label;
+  $("#starBox").hidden = false; $("#starCount").textContent = state.stars;
+  $("#listTitle").textContent = kid.listTitle; $("#listHint").textContent = kid.listHint; $("#gameHint").textContent = kid.gameHint;
+  $("#wordGrid").className = "words" + (id === "luca" ? " big" : "");
+  $("#doors").innerHTML = kid.games.map((g, i) => `<button class="door" data-mode="${g.id}"><span class="num">${i + 1}</span><b>${g.title}</b><small>${g.sub}</small></button>`).join("");
+  goHome();
+}
+$("#doors").addEventListener("click", (e) => { const d = e.target.closest(".door"); if (d) startGame(d.dataset.mode); });
+
+/* Home word grid */
+function markE(w) { return kidId === "camila" ? w.replace(/e$/, '<span class="e">e</span>') : w; }
+function renderGrid() {
+  $("#wordGrid").innerHTML = WORDS.map((it, i) => `<button class="word" data-i="${i}">${markE(it.w)}${state.mastered[it.w] ? '<svg class="done" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3 6.5 7 .8-5.2 4.8 1.5 7L12 17.5 5.7 21l1.5-7L2 9.3l7-.8z"/></svg>' : ""}</button>`).join("");
+}
+$("#wordGrid").addEventListener("click", (e) => { const b = e.target.closest(".word"); if (b) sayWord(WORDS[+b.dataset.i]); });
+
+/* Game engine */
+let mode, queue, idx, roundStars, locked;
+const recentRight = new Set();
+const stage = $("#stage"), feedback = $("#feedback"), actions = $("#actions");
+$("#backBtn").addEventListener("click", goHome);
+function goHome() { $("#pick").hidden = true; $("#game").hidden = true; $("#home").hidden = false; renderGrid(); if (canSpeak) speechSynthesis.cancel(); }
+
+const RENDER = { listen: renderListen, missing: renderMissing, scramble: renderScramble, magic: renderMagic, find: renderFind, copy: renderCopy, flash: renderFlash };
+function startGame(m) {
+  mode = m; queue = shuffle(WORDS); idx = 0; roundStars = 0; recentRight.clear();
+  $("#home").hidden = true; $("#game").hidden = false;
+  next();
+}
+function setFeedback(kind, html) { feedback.className = "feedback " + (kind || ""); feedback.innerHTML = html || ""; }
+function next() {
+  locked = false; setFeedback("", ""); actions.innerHTML = ""; stage.classList.remove("shake");
+  if (idx >= queue.length) return finish();
+  $("#counter").textContent = `${idx + 1} of ${queue.length}`;
+  $("#bar").style.width = (idx / queue.length * 100) + "%";
+  RENDER[mode](queue[idx]);
+}
+function advance(delay) { $("#bar").style.width = ((idx + 1) / queue.length * 100) + "%"; idx++; setTimeout(next, delay || 1400); }
+function nextButton() { actions.innerHTML = '<button class="btn" id="nextBtn">Next →</button>'; $("#nextBtn").onclick = () => { idx++; next(); }; $("#nextBtn").focus(); }
+function correct(item, extra) {
+  locked = true; roundStars++; addStar(item.w); recentRight.add(item.w);
+  speak("Yes! " + item.w, 1);
+  setFeedback("good", praise() + (extra ? "<br>" + extra : ""));
+  advance();
+}
+function diffWord(guess, right) { return right.split("").map((ch, i) => guess[i] === ch ? ch : `<span class="miss">${ch}</span>`).join(""); }
+function wrong(item, guess) {
+  locked = true; stage.classList.remove("shake"); void stage.offsetWidth; stage.classList.add("shake");
+  speak("Almost. " + item.w + " is spelled " + item.w.split("").join(" "), 0.8);
+  setFeedback("bad", `Not quite. It's spelled<div class="fix">${diffWord(guess || "", item.w)}</div>`);
+  nextButton();
+}
+function hearButton(item) { actions.innerHTML = `<button class="btn ghost" id="hearBtn">Hear it</button>`; $("#hearBtn").onclick = () => sayWord(item); }
+function clue(item) { return `<p class="sentence">${item.s.replace("___", "<u>&nbsp;&nbsp;&nbsp;</u>")}</p>`; }
+
+/* ---------- Camila's games ---------- */
+function renderListen(item) {
+  stage.innerHTML = `
+    <h2 class="center">Listen, then spell it</h2>
+    <button class="speak" id="speakBtn">${speakerSvg} Hear the word</button>
+    ${clue(item)}
+    ${canSpeak ? "" : '<p class="hint center">Sound isn\'t available here, so use the sentence as your clue.</p>'}
+    <input class="spell" id="answer" autocomplete="off" autocapitalize="none" spellcheck="false" aria-label="Type the word" placeholder="type here">`;
+  actions.innerHTML = '<button class="btn" id="checkBtn">Check</button>';
+  $("#speakBtn").onclick = () => sayWord(item);
+  const input = $("#answer"); input.focus();
+  const check = () => { if (locked) return; const g = input.value.trim().toLowerCase(); if (!g) return; g === item.w ? correct(item) : wrong(item, g); };
+  $("#checkBtn").onclick = check; input.addEventListener("keydown", e => { if (e.key === "Enter") check(); });
+  setTimeout(() => sayWord(item), 300);
+}
+
+function renderMissing(item) {
+  const w = item.w; const n = w.length >= 7 ? 2 : 1;
+  const positions = shuffle([...Array(w.length).keys()]).slice(0, n).sort((a, b) => a - b);
+  let cursor = 0;
+  const letters = "abcdefghiklmnoprstuvwy";
+  const draw = () => {
+    stage.innerHTML = `
+      <h2 class="center">Which letter is missing?</h2>
+      ${clue(item)}
+      <div class="slots">${w.split("").map((ch, i) => positions.includes(i) ? (i < positions[cursor] ? `<span class="slot filled">${ch}</span>` : `<span class="slot blank">${i === positions[cursor] ? "?" : ""}</span>`) : `<span class="slot filled">${ch}</span>`).join("")}</div>
+      <div class="choices" id="choices"></div>`;
+    const right = w[positions[cursor]];
+    const pool = shuffle(letters.split("").filter(l => l !== right)).slice(0, 3);
+    $("#choices").innerHTML = shuffle([right, ...pool]).map(l => `<button class="tile" data-l="${l}">${l}</button>`).join("");
+    $("#choices").onclick = (e) => {
+      const b = e.target.closest(".tile"); if (!b || locked) return;
+      if (b.dataset.l === right) {
+        cursor++;
+        if (cursor >= positions.length) { stage.querySelectorAll(".slot.blank").forEach(s => { s.classList.remove("blank"); s.classList.add("filled"); }); correct(item); }
+        else draw();
+      } else {
+        wrong(item, w.split("").map((ch, i) => i === positions[cursor] ? b.dataset.l : ch).join(""));
+      }
+    };
+  };
+  draw(); hearButton(item);
+}
+
+function renderScramble(item) {
+  const w = item.w;
+  let order = shuffle([...Array(w.length).keys()]);
+  if (order.map(i => w[i]).join("") === w) order.reverse();
+  let picked = [];
+  stage.innerHTML = `<h2 class="center">Unscramble the word</h2>${clue(item)}<div class="slots" id="slots"></div><div class="tiles" id="tiles"></div>`;
+  const slots = $("#slots"), tiles = $("#tiles");
+  actions.innerHTML = `<button class="btn ghost" id="hearBtn">Hear it</button><button class="btn ghost" id="undoBtn">Undo</button><button class="btn" id="checkBtn">Check</button>`;
+  const draw = () => {
+    slots.innerHTML = w.split("").map((_, i) => picked[i] !== undefined ? `<span class="slot filled">${w[picked[i]]}</span>` : `<span class="slot"></span>`).join("");
+    tiles.innerHTML = order.map(i => `<button class="tile ${picked.includes(i) ? "used" : ""}" data-i="${i}">${w[i]}</button>`).join("");
+    $("#undoBtn").disabled = picked.length === 0; $("#checkBtn").disabled = picked.length !== w.length;
+  };
+  $("#hearBtn").onclick = () => sayWord(item);
+  $("#undoBtn").onclick = () => { picked.pop(); draw(); };
+  $("#checkBtn").onclick = () => { if (locked) return; const g = picked.map(i => w[i]).join(""); g === w ? correct(item) : wrong(item, g); };
+  tiles.onclick = (e) => { const b = e.target.closest(".tile"); if (!b || locked || picked.includes(+b.dataset.i)) return; picked.push(+b.dataset.i); draw(); if (picked.length === w.length) $("#checkBtn").click(); };
+  draw();
+}
+
+function renderMagic(item) {
+  const w = item.w;
+  const vowelIdx = (() => { for (let i = w.length - 3; i >= 0; i--) if ("aeiou".includes(w[i])) return i; return -1; })();
+  const html = w.split("").map((ch, i) => i === vowelIdx ? `<span class="v">${ch}</span>` : (i === w.length - 1 ? `<span class="e">${ch}</span>` : ch)).join("");
+  stage.innerHTML = `
+    <h2 class="center">Magic e or Sneaky e?</h2>
+    <p class="hint center">Does the e at the end make the <span style="color:var(--accent)">${w[vowelIdx]}</span> say its own name?</p>
+    <div class="bigword">${html}</div>
+    <div class="two">
+      <button class="btn wand" data-a="true">✨ Magic e<br><small>the vowel says its name</small></button>
+      <button class="btn sneak" data-a="false">🕵️ Sneaky e<br><small>the vowel stays short</small></button>
+    </div>
+    <div class="rule" hidden id="why"></div>`;
+  hearButton(item);
+  setTimeout(() => speak(w, 0.8), 300);
+  stage.querySelector(".two").onclick = (e) => {
+    const b = e.target.closest("button"); if (!b || locked) return;
+    locked = true; const right = (b.dataset.a === "true") === item.magic;
+    const why = $("#why"); why.hidden = false; why.innerHTML = `<b>${item.magic ? "Magic e." : "Sneaky e."}</b> ${item.why}`;
+    if (right) { roundStars++; addStar(w); recentRight.add(w); speak("Right! " + w + ".", 1); setFeedback("good", "Right!"); }
+    else { speak("Not this time. " + w + " has a " + (item.magic ? "magic" : "sneaky") + " e.", 0.9); setFeedback("bad", "Not this time."); }
+    nextButton();
+  };
+}
+
+/* ---------- Luca's games (no typing, no penalties, keep trying until found) ---------- */
+function renderFind(item) {
+  const others = shuffle(WORDS.filter(x => x.w !== item.w)).slice(0, 2);
+  const cards = shuffle([item, ...others]);
+  let firstTry = true;
+  stage.innerHTML = `
+    <h2 class="center">Find the word</h2>
+    <button class="speak" id="speakBtn">${speakerSvg} Tap to hear it again</button>
+    <div class="cards" id="cards">${cards.map(c => `<button class="card" data-w="${c.w}">${c.w}</button>`).join("")}</div>`;
+  $("#speakBtn").onclick = () => speak(item.w + ". Find the word " + item.w + ".", 0.8);
+  setTimeout(() => speak("Find the word " + item.w + ".", 0.8), 300);
+  $("#cards").onclick = (e) => {
+    const b = e.target.closest(".card"); if (!b || locked) return;
+    if (b.dataset.w === item.w) {
+      b.classList.add("win"); locked = true; roundStars++; addStar(item.w); recentRight.add(item.w);
+      speak((firstTry ? praise() : "You found it!") + " " + item.w + ". " + item.s, 0.9);
+      setFeedback("good", (firstTry ? praise() : "You found it!") + `<br><span style="font-size:18px;color:var(--muted)">${item.s}</span>`);
+      advance(2200);
+    } else {
+      firstTry = false; b.classList.remove("shake"); void b.offsetWidth; b.classList.add("shake"); b.classList.add("out");
+      speak("That says " + b.dataset.w + ". Try again. Find " + item.w + ".", 0.85);
+      setFeedback("bad", `That one says <b>${b.dataset.w}</b>. Try again!`);
+    }
+  };
+}
+
+function renderCopy(item) {
+  const w = item.w; const letters = w.split("");
+  const extras = shuffle("abcdeghilmnoprstuwy".split("").filter(l => !w.toLowerCase().includes(l))).slice(0, 2);
+  const tiles = shuffle(letters.map((l, i) => ({ l, i })).concat(extras.map((l, k) => ({ l, i: -1 - k }))));
+  let pos = 0; const used = new Set();
+  stage.innerHTML = `
+    <h2 class="center">Build the word</h2>
+    <div class="bigword" id="model">${w}</div>
+    <p class="hint center">Tap the letters in order to match the word above.</p>
+    <div class="slots xl" id="slots"></div>
+    <div class="tiles xl" id="tiles"></div>`;
+  const draw = () => {
+    $("#slots").innerHTML = letters.map((l, i) => i < pos ? `<span class="slot filled">${l}</span>` : `<span class="slot ghost">${l}</span>`).join("");
+    $("#tiles").innerHTML = tiles.map((t, k) => `<button class="tile ${used.has(k) ? "used" : ""}" data-k="${k}">${t.l}</button>`).join("");
+  };
+  $("#tiles").onclick = (e) => {
+    const b = e.target.closest(".tile"); if (!b || locked) return;
+    const k = +b.dataset.k, t = tiles[k];
+    if (t.l === letters[pos]) {
+      used.add(k); pos++; speak(t.l, 1); draw();
+      if (pos === letters.length) setTimeout(() => correct(item, `<span style="font-size:18px;color:var(--muted)">${item.s}</span>`), 350);
+    } else {
+      b.classList.remove("shake"); void b.offsetWidth; b.classList.add("shake");
+      speak("Not that one. Find the " + letters[pos] + ".", 0.9);
+      setFeedback("bad", `Look for the <b>${letters[pos]}</b>`);
+    }
+  };
+  hearButton(item);
+  setTimeout(() => sayWord(item), 300);
+  draw();
+}
+
+function renderFlash(item) {
+  stage.innerHTML = `
+    <h2 class="center">Read the word</h2>
+    <p class="hint center">Say it out loud, then tap the card to hear it.</p>
+    <button class="flash" id="flash">${item.w}</button>`;
+  $("#flash").onclick = () => sayWord(item);
+  actions.innerHTML = `<button class="btn ghost huge" id="hearBtn">🔊 Hear it</button><button class="btn mint huge" id="gotBtn">I read it! ⭐</button>`;
+  $("#hearBtn").onclick = () => sayWord(item);
+  $("#gotBtn").onclick = () => { if (locked) return; correct(item, `<span style="font-size:18px;color:var(--muted)">${item.s}</span>`); };
+}
+
+/* Finish */
+function finish() {
+  $("#bar").style.width = "100%"; $("#counter").textContent = "Done!";
+  const all = roundStars === queue.length, near = roundStars >= Math.ceil(queue.length * .8);
+  const missed = queue.map(q => q.w).filter(w => !recentRight.has(w));
+  stage.innerHTML = `<div class="finish">
+    <div class="trophy">${all ? "🏆" : near ? "🌟" : "💪"}</div>
+    <div class="big">${all ? "Perfect round!" : near ? "So close!" : "Good practice!"}</div>
+    <p class="sub" style="font-size:20px">${roundStars} of ${queue.length} stars this round</p>
+    ${missed.length ? `<p class="hint">Words to practice again: <b>${missed.join(", ")}</b></p>` : ""}
+  </div>`;
+  actions.innerHTML = `<button class="btn ghost" id="homeBtn">Home</button><button class="btn mint" id="againBtn">Play again</button>`;
+  $("#homeBtn").onclick = goHome; $("#againBtn").onclick = () => startGame(mode);
+  speak(all ? `Perfect round, ${kid.name}! You are a word star!` : `Great practice, ${kid.name}!`, 1);
+  if (all || near) confetti();
+}
+
+/* Confetti */
+function confetti() {
+  const c = $("#confetti"); c.hidden = false; const ctx = c.getContext("2d");
+  c.width = innerWidth; c.height = innerHeight;
+  const colors = ["#ff6b4a", "#ffc93c", "#2fbf85", "#7c5cff", "#2f9bff"];
+  const bits = Array.from({ length: 140 }, () => ({ x: Math.random() * c.width, y: -20 - Math.random() * c.height * .5, r: 5 + Math.random() * 6, vx: (Math.random() - .5) * 2, vy: 2 + Math.random() * 3, a: Math.random() * 6, col: colors[Math.floor(Math.random() * colors.length)] }));
+  let t = 0;
+  (function frame() {
+    ctx.clearRect(0, 0, c.width, c.height);
+    bits.forEach(b => { b.x += b.vx; b.y += b.vy; b.a += .1; ctx.save(); ctx.translate(b.x, b.y); ctx.rotate(b.a); ctx.fillStyle = b.col; ctx.fillRect(-b.r / 2, -b.r / 2, b.r, b.r * .6); ctx.restore(); });
+    if (++t < 220) requestAnimationFrame(frame); else { ctx.clearRect(0, 0, c.width, c.height); c.hidden = true; }
+  })();
+}
+
+/* Boot: remember the last player on this device */
+(function boot() {
+  let last = null; try { last = localStorage.getItem("wq-last"); } catch (e) {}
+  if (last && PROFILES[last]) pickKid(last); else renderPick();
+})();
+</script>
+
+</body>
+</html>
