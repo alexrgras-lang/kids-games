@@ -287,7 +287,7 @@ canvas#confetti { position: fixed; inset: 0; width: 100%; height: 100%; pointer-
 const PROFILES = {
   camila: {
     name: "Camila", face: "🐾", tagline: "Pet Rescue · spelling", worldTitle: `Camila's <span>Pet Rescue</span>`,
-    label: "Week of 9/28 · Final e words · Test Friday 10/2",
+    label: "Week of 10/5 · Final e syllables · Test Friday 10/9",
     coin: "🐾", coinName: "paw coins", mission: 40, shelfTitle: "My rescue center", shopName: "Adoption center", shopHint: "Spend paw coins to adopt animals and stock the rescue.",
     roomsHint: "Every job uses this week's spelling words. Harder levels pay more paw coins.",
     titles: ["Volunteer", "Helper", "Vet Tech", "Trainer", "Rescue Manager", "Rescue Hero"],
@@ -300,21 +300,22 @@ const PROFILES = {
     ],
     shop: [["🐶", "Puppy", 10], ["🐱", "Kitten", 10], ["🐰", "Bunny", 14], ["🐹", "Hamster", 14], ["🐢", "Turtle", 18], ["🐦", "Finch", 18], ["🦜", "Parrot", 24], ["🐷", "Piglet", 26], ["🐑", "Lamb", 28], ["🐴", "Pony", 34], ["🦊", "Fox kit", 36], ["🦉", "Owl", 40], ["🐼", "Panda cub", 48], ["🦩", "Flamingo", 52], ["🐬", "Dolphin", 60], ["🦄", "Unicorn", 72], ["🏡", "New kennel", 20], ["🛁", "Bath station", 24], ["🎾", "Toy chest", 16], ["🏥", "Vet clinic", 56], ["🌳", "Play yard", 64], ["🚐", "Rescue van", 90], ["🏰", "Dream shelter", 120]],
     words: [
-      { w: "place",    s: "Put the leash back in its ___.",         magic: true,  why: "The e makes the a say its name: pl-A-ce." },
-      { w: "page",     s: "Turn to the next ___ of the pet chart.",  magic: true,  why: "The e makes the a say its name: p-A-ge." },
-      { w: "slide",    s: "The puppies love the ___ in the yard.",   magic: true,  why: "The e makes the i say its name: sl-I-de." },
-      { w: "these",    s: "___ kittens need a home.",                magic: true,  why: "The e makes the first e say its name: th-E-se." },
-      { w: "cute",     s: "The bunny is so ___.",                    magic: true,  why: "The e makes the u say its name: c-U-te." },
-      { w: "hope",     s: "I ___ the lost dog finds its family.",    magic: true,  why: "The e makes the o say its name: h-O-pe." },
-      { w: "cupcake",  s: "The vet brought a ___ for the party.",    magic: true,  why: "Two little words: cup + cake. The e makes the a in cake long." },
-      { w: "backbone", s: "A cat's ___ is very bendy.",              magic: true,  why: "Two little words: back + bone. The e makes the o in bone long." },
-      { w: "bedtime",  s: "The puppies get sleepy at ___.",          magic: true,  why: "Two little words: bed + time. The e makes the i in time long." },
-      { w: "mistake",  s: "Feeding the fish twice was a ___.",       magic: true,  why: "mis + take. The e makes the a in take long." },
-      { w: "dislike",  s: "Cats ___ loud noises.",                   magic: true,  why: "dis + like. The e makes the i in like long." },
-      { w: "have",     s: "We ___ two new kittens today.",           magic: false, why: "Sneaky! The a stays short (h-a-v). English words never end in v, so the e just tags along." },
-      { w: "come",     s: "___ see the baby goats!",                 magic: false, why: "Sneaky! The o sounds like a short u (c-u-m). You just have to remember this one." },
-      { w: "done",     s: "The bath is ___ and the dog is clean.",   magic: false, why: "Sneaky! The o sounds like a short u (d-u-n). Rhymes with come!" },
-      { w: "sure",     s: "Are you ___ the gate is shut?",           magic: false, why: "Sneaky! It sounds like 'shur'. The e is silent but the u isn't long." },
+      { w: "side",       s: "The kitten sleeps on its ___.",                       magic: true,  why: "The e makes the i say its name: s-I-de." },
+      { w: "sideways",   s: "The crab walks ___ across the tank.",                 magic: true,  why: "Two syllables: side + ways. The e in side makes the i long." },
+      { w: "male",       s: "The ___ parrot has the brightest feathers.",          magic: true,  why: "The e makes the a say its name: m-A-le." },
+      { w: "female",     s: "The ___ cat is named Luna.",                          magic: true,  why: "Two syllables: fe + male. The e in male makes the a long." },
+      { w: "wide",       s: "The dog opened its mouth ___ for a big yawn.",        magic: true,  why: "The e makes the i say its name: w-I-de." },
+      { w: "widespread", s: "Fleas can be ___ if we skip bath day.",               magic: true,  why: "Two syllables: wide + spread. The e in wide makes the i long." },
+      { w: "note",       s: "Leave a ___ for the night volunteer.",                magic: true,  why: "The e makes the o say its name: n-O-te." },
+      { w: "notebook",   s: "Write the puppy's weight in the ___.",                magic: true,  why: "Two syllables: note + book. The e in note makes the o long." },
+      { w: "fuse",       s: "The heat lamp went off when the ___ blew.",           magic: true,  why: "The e makes the u say its name: f-U-se." },
+      { w: "refuse",     s: "Some cats ___ to eat wet food.",                      magic: true,  why: "Two syllables: re + fuse. The e in fuse makes the u long." },
+      { w: "delete",     s: "Please ___ the old adoption posters.",                magic: true,  why: "Two syllables: de + lete. The final e makes the second e say its name." },
+      { w: "complete",   s: "The checkup is ___ and the bunny is healthy.",        magic: true,  why: "Two syllables: com + plete. The final e makes the e in plete long." },
+      { w: "there",      s: "The leashes hang over ___ by the door.",              magic: false, why: "Sneaky! It ends in e, but it sounds like 'air'. This one you just have to know." },
+      { w: "said",       s: "The vet ___ the puppy is healthy." },
+      { w: "them",       s: "The kittens are hungry, so feed ___ first." },
+      { w: "other",      s: "One rabbit is white and the ___ is brown." },
     ],
   },
   luca: {
@@ -388,7 +389,8 @@ function clip(k) { if (!clipCache[k]) { const a = new Audio(AUDIO_BASE + encodeU
 function allWords() { let out = []; for (const pr of Object.values(PROFILES)) out = out.concat(pr.words || [], pr.bonus || []); return out; }
 function keyText(k) {
   if (k.startsWith("w_") || k.startsWith("l_")) return k.slice(2);
-  if (k.startsWith("s_")) { const it = allWords().find(x => x.w === k.slice(2)); return it ? it.s.replace("___", it.w) : ""; }
+  if (k.startsWith("sc_")) { const it = PROFILES.camila.words.find(x => x.w === k.slice(3)); return it ? it.s.replace("___", it.w) : ""; }
+  if (k.startsWith("s_")) { const it = (PROFILES.luca.words.concat(PROFILES.luca.bonus)).find(x => x.w === k.slice(2)); return it ? it.s.replace("___", it.w) : ""; }
   if (k.startsWith("p_")) return PHRASES[+k.slice(2)] || ""; return k;
 }
 function stopAudio() { if (playingClip) { try { playingClip.onended = null; playingClip.pause(); } catch (e) {} playingClip = null; } if (canSpeak) { try { clearTimeout(speakTimer); speechSynthesis.cancel(); } catch (e) {} } }
@@ -398,18 +400,20 @@ function say(keys) {
     try { a.currentTime = 0; } catch (e) {} const pr = a.play(); if (pr && pr.catch) pr.then(() => { clipsWork = true; speechStatus = "ok"; }).catch(() => fallback()); };
   playNext();
 }
-function sayWord(item) { say(["w_" + item.w, "s_" + item.w, "w_" + item.w]); }
+function sKey(item) { return (PROFILES.camila.words.includes(item) ? "sc_" : "s_") + item.w; }
+function sayWord(item) { say(["w_" + item.w, sKey(item), "w_" + item.w]); }
 let lastPraise = 0; function praise() { lastPraise = Math.floor(Math.random() * 6); return PHRASES[lastPraise]; }
 function showSoundStatus() { const el = $("#soundStatus"); el.hidden = false; el.textContent = speechStatus === "ok" ? (clipsWork ? "Sound works (recorded voice)." : "Sound works (browser voice).") : speechStatus || "Testing…"; }
 $("#soundBtn").onclick = () => { speechStatus = ""; showSoundStatus(); say(["p_15"]); setTimeout(() => { if (speechStatus !== "ok") speechStatus = speechStatus || "No sound started. Check the volume, then try a normal browser tab."; showSoundStatus(); }, 2500); };
 
 /* ---------- state per kid ---------- */
 let kidId = null, kid = null, S = null, WORDS = [];
-const KEY = (id) => `wq2-${id}-${PROFILES[id].label}`;
+const KEY = (id) => `wq2-${id}`;
 const fresh = () => ({ coins: 0, owned: [], levels: {}, day: null, dayCoins: 0, missionDone: false, done: 0, mastered: {}, weak: {} });
 function loadState(id) {
   let st = null;
   try { const raw = localStorage.getItem(KEY(id)); if (raw) st = JSON.parse(raw); } catch (e) {}
+  if (!st) { try { for (const k of Object.keys(localStorage)) if (k.startsWith(`wq2-${id}-`)) { st = JSON.parse(localStorage.getItem(k)); break; } } catch (e) {} } /* first week's key carried the label */
   if (!st) { /* carry stars + levels over from the first version of Word Quest */
     st = fresh(); try { for (const k of Object.keys(localStorage)) if (k.startsWith(`wq-${id}-`)) { const old = JSON.parse(localStorage.getItem(k) || "{}"); st.coins = Math.max(st.coins, old.stars || 0); st.levels = Object.assign({}, old.levels || {}, st.levels); st.mastered = Object.assign({}, old.mastered || {}); } } catch (e) {}
   }
@@ -492,7 +496,7 @@ function miss() {
 function fail() {
   locked = true; finalWrong(); const w = cur && cur.w;
   stage.querySelectorAll(".hidden-word").forEach(m => m.classList.remove("hidden-word"));
-  if (w) say(["p_31", "w_" + w, "s_" + w]);
+  if (w) say(["p_31", "w_" + w, sKey(cur)]);
   setFeedback("bad", `Let's look together.${w ? `<div class="fix">${w}</div>` : ""}${cur && cur.s ? small(cur.s.replace("___", w)) : ""}`);
   $("#bar").style.width = ((idx + 1) / total * 100) + "%"; idx++;
   actions.innerHTML = `<button class="btn" id="nextBtn">Next →</button>`; $("#nextBtn").onclick = nextProblem; $("#nextBtn").focus();
@@ -559,7 +563,7 @@ function renderNotes(pool, L) {
     ${L === 1 ? `<div class="bigword" id="model">${w}</div>` : `<button class="speak" id="speakBtn">${speakerSvg} Hear it</button>`}
     ${L <= 2 || L === 4 ? clue(item) : ""}
     <input class="spell" id="answer" autocomplete="off" autocapitalize="none" spellcheck="false" aria-label="Type the word" placeholder="type here"></div>`;
-  const hear = () => L === 4 ? say(["s_" + w]) : L === 3 ? say(["w_" + w]) : sayWord(item);
+  const hear = () => L === 4 ? say([sKey(item)]) : L === 3 ? say(["w_" + w]) : sayWord(item);
   if (L === 1) setTimeout(() => { const m = $("#model"); if (m) m.classList.add("hidden-word"); }, 3000); else { $("#speakBtn").onclick = hear; setTimeout(hear, 300); }
   actions.innerHTML = `<button class="btn" id="checkBtn">Check</button>`;
   const input = $("#answer"); input.focus();
@@ -751,10 +755,10 @@ function renderSentence(pool, L) {
   maxStrikes = 3;
   stage.innerHTML = `<div class="job"><p class="q">${kid.bonus ? "The villager's sign fell apart. Listen, then tap the words in order." : "The vet's note got shuffled. Listen, then tap the words in order."}</p><button class="speak" id="speakBtn">${speakerSvg} Hear the sentence</button><div class="sentslots" id="sentslots"></div><div class="chips" id="chips"></div></div>`;
   const draw = () => { $("#sentslots").innerHTML = words.map((t, i) => i < pos ? `<span class="done">${t}</span>` : `<span class="ph"></span>`).join(""); $("#chips").innerHTML = chips.map((c, k) => `<button class="chip ${used.has(k) ? "used" : ""}" data-k="${k}">${c.t}</button>`).join(""); };
-  $("#speakBtn").onclick = () => say(["s_" + item.w]); setTimeout(() => say(["p_30", "s_" + item.w]), 300); draw();
+  $("#speakBtn").onclick = () => say([sKey(item)]); setTimeout(() => say(["p_30", sKey(item)]), 300); draw();
   $("#chips").onclick = (e) => { const b = e.target.closest(".chip"); if (!b || locked) return; const k = +b.dataset.k, c = chips[k];
     if (c.i === pos) { used.add(k); pos++; const key = allWords().find(x => x.w.toLowerCase() === c.t.toLowerCase()); if (key) say(["w_" + key.w]); draw(); if (pos === words.length) setTimeout(() => correct(item.w, full), 300); }
-    else { b.classList.add("shake"); setTimeout(() => b.classList.remove("shake"), 400); if (miss()) return; say(["s_" + item.w]); setFeedback("bad", `Not that word yet. Listen for the word that comes after <b>${pos ? words[pos - 1] : "the start"}</b>.`); } };
+    else { b.classList.add("shake"); setTimeout(() => b.classList.remove("shake"), 400); if (miss()) return; say([sKey(item)]); setFeedback("bad", `Not that word yet. Listen for the word that comes after <b>${pos ? words[pos - 1] : "the start"}</b>.`); } };
 }
 
 /* ---------- shop ---------- */
