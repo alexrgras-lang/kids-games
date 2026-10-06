@@ -166,7 +166,7 @@ canvas#confetti { position: fixed; inset: 0; width: 100%; height: 100%; pointer-
       <div class="row between"><h2>My boutique shelf</h2><button class="btn lav small" id="shopBtn">Sticker shop</button></div>
       <div class="shelf" id="shelf"></div>
     </div>
-    <p class="center"><button class="link" id="grownBtn">For grown-ups</button></p>
+    <p class="center"><button class="link" id="soundBtn">Sound check</button> · <button class="link" id="grownBtn">For grown-ups</button><br><span class="hint" id="soundStatus" hidden></span></p>
   </section>
 
   <!-- PLAY -->
@@ -218,6 +218,29 @@ const ITEMS = [["tiara", "👑"], ["hair bow", "🎀"], ["bracelet", "📿"], ["
 const plural = (w) => /(s|sh|ch|x)$/.test(w) ? w + "es" : w + "s";
 const FLAVORS = [["Strawberry", "🍓"], ["Vanilla", "🤍"], ["Chocolate", "🍫"], ["Lemon", "🍋"], ["Blueberry", "🫐"]];
 const BAR_COLORS = ["#ff5fa2", "#9b6dff", "#ffb400", "#2fbf85", "#4fb3ff"];
+
+/* ---------- speech (utterance held globally; short delay after cancel so Chrome/Safari don't drop it) ---------- */
+const canSpeak = "speechSynthesis" in window;
+let currentUtterance = null, speakTimer = null, speechStatus = "";   /* utterance held globally so Chrome can't garbage-collect it mid-speech */
+function pickVoice() {
+  try { const vs = speechSynthesis.getVoices(); if (!vs.length) return null;
+    return vs.find(v => /^en[-_]US/i.test(v.lang) && /Samantha|Google US English|Karen|Ava|Allison/i.test(v.name)) || vs.find(v => /^en[-_]US/i.test(v.lang)) || vs.find(v => /^en/i.test(v.lang)) || vs[0]; } catch (e) { return null; }
+}
+function speak(text, rate) {
+  if (!canSpeak) { speechStatus = "This browser has no speech engine."; return false; }
+  try {
+    clearTimeout(speakTimer); speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text); u.rate = rate || .9; u.lang = "en-US"; u.volume = 1; const v = pickVoice(); if (v) u.voice = v; currentUtterance = u;
+    u.onstart = () => { speechStatus = "ok"; }; u.onerror = (e) => { speechStatus = "error: " + (e.error || "unknown"); showSoundStatus(); };
+    /* speak() right after cancel() is dropped in Chrome and Safari; give the engine a beat, then one retry if it never starts */
+    speakTimer = setTimeout(() => { try { speechSynthesis.resume(); speechSynthesis.speak(u); } catch (e) { speechStatus = "error: " + e.message; }
+      setTimeout(() => { if (speechStatus !== "ok" && !speechSynthesis.speaking && !speechSynthesis.pending) { try { speechSynthesis.cancel(); speechSynthesis.speak(u); } catch (e) {} } }, 700); }, 120);
+    return true;
+  } catch (e) { speechStatus = "error: " + e.message; return false; }
+}
+function showSoundStatus() { const el = document.getElementById("soundStatus"); if (!el) return; el.hidden = false;
+  el.textContent = speechStatus === "ok" ? "Sound works." : speechStatus.startsWith("error") ? `Sound blocked (${speechStatus.slice(7)}). Try the game in a normal browser tab.` : speechStatus || "Testing…"; }
+if (canSpeak) { try { speechSynthesis.getVoices(); speechSynthesis.onvoiceschanged = () => speechSynthesis.getVoices(); } catch (e) {} }
 
 /* ---------- state ---------- */
 const KEY = "sparkle-boutique-v1";
@@ -357,6 +380,7 @@ function renderLobby() {
   $("#shelf").innerHTML = S.owned.length ? S.owned.map(id => `<span title="${STICKERS.find(s => s.id === id).name}">${STICKERS.find(s => s.id === id).em}</span>`).join("") : `<span class="empty">Your shelf is empty. Earn gems and visit the sticker shop!</span>`;
 }
 $("#rooms").addEventListener("click", (e) => { const b = e.target.closest(".room"); if (b) startRoom(b.dataset.room); });
+$("#soundBtn").onclick = () => { speechStatus = ""; showSoundStatus(); const vs = canSpeak ? speechSynthesis.getVoices().length : 0; speak("Hello! Can you hear me? Sound is working."); setTimeout(() => { if (speechStatus !== "ok") speechStatus = speechStatus || (vs ? "No sound started. The browser may be blocking speech in this window." : "No voices installed in this browser."); showSoundStatus(); }, 2500); };
 $("#shopBtn").onclick = renderShop; $("#shopBack").onclick = renderLobby; $("#grownBtn").onclick = renderGrown; $("#grownBack").onclick = renderLobby; $("#backBtn").onclick = renderLobby;
 
 /* ---------- play ---------- */
@@ -373,7 +397,7 @@ function nextProblem() {
   stage.innerHTML = `<div class="receipt"><p class="q">${cur.q}</p>${cur.visual ? `<div class="visual">${cur.visual}</div>` : ""}</div><div class="answer" id="answer"></div>`;
   renderAnswer();
   actions.innerHTML = `<button class="btn ghost small" id="readBtn">🔊 Read it to me</button>`;
-  $("#readBtn").onclick = () => { try { speechSynthesis.cancel(); const eq = stage.querySelector(".big, .seq"); const text = cur.q.replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu, "") + (eq ? ". " + eq.textContent.replace("?", "what").replace(/−/g, "minus").replace(/×/g, "times") : ""); const u = new SpeechSynthesisUtterance(text); u.rate = .9; speechSynthesis.speak(u); } catch (e) {} };
+  $("#readBtn").onclick = () => { const eq = stage.querySelector(".big, .seq"); speak(cur.q.replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu, "") + (eq ? ". " + eq.textContent.replace("?", "what").replace(/−/g, "minus").replace(/×/g, "times") : "")); };
 }
 function renderAnswer() {
   const box = $("#answer");
