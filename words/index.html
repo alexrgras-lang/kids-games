@@ -323,7 +323,7 @@ const PROFILES = {
       { id: "frac",  icon: "🍪", name: "Treat Sharing", blurb: "Fractions" },
       { id: "place", icon: "🔢", name: "Kibble Count",  blurb: "Place value and rounding" },
     ],
-    mathHint: "Math jobs start at 3rd grade and move with you: three right in a row moves up, a wrong answer opens a hint.",
+    mathHint: "Math jobs start at 2nd grade. Three right in a row and you graduate to the next grade. A wrong answer opens a hint.",
     shop: [["🐶", "Puppy", 10], ["🐱", "Kitten", 10], ["🐰", "Bunny", 14], ["🐹", "Hamster", 14], ["🐢", "Turtle", 18], ["🐦", "Finch", 18], ["🦜", "Parrot", 24], ["🐷", "Piglet", 26], ["🐑", "Lamb", 28], ["🐴", "Pony", 34], ["🦊", "Fox kit", 36], ["🦉", "Owl", 40], ["🐼", "Panda cub", 48], ["🦩", "Flamingo", 52], ["🐬", "Dolphin", 60], ["🦄", "Unicorn", 72], ["🏡", "New kennel", 20], ["🛁", "Bath station", 24], ["🎾", "Toy chest", 16], ["🏥", "Vet clinic", 56], ["🌳", "Play yard", 64], ["🚐", "Rescue van", 90], ["🏰", "Dream shelter", 120],
       ["🦔", "Hedgehog", 60], ["🐸", "Frog pond", 62], ["🐧", "Penguin", 66], ["🦦", "Otter", 70], ["🐨", "Koala", 74], ["🦘", "Kangaroo", 78], ["🦋", "Butterfly garden", 80], ["🐻", "Bear cub", 86], ["🦒", "Giraffe", 92], ["🦓", "Zebra", 96], ["🐘", "Elephant", 104], ["🐯", "Tiger cub", 110], ["🦁", "Lion cub", 116], ["🎪", "Adoption fair", 130], ["🏖️", "Beach day", 140], ["🚁", "Rescue helicopter", 160], ["🏝️", "Animal island", 190], ["🎓", "Vet school", 220], ["🌟", "Star of the rescue", 260], ["👑", "Rescue Queen crown", 320]],
     words: [
@@ -444,10 +444,12 @@ function loadState(id) {
   if (!st) { /* carry stars + levels over from the first version of Word Quest */
     st = fresh(); try { for (const k of Object.keys(localStorage)) if (k.startsWith(`wq-${id}-`)) { const old = JSON.parse(localStorage.getItem(k) || "{}"); st.coins = Math.max(st.coins, old.stars || 0); st.levels = Object.assign({}, old.levels || {}, st.levels); st.mastered = Object.assign({}, old.mastered || {}); } } catch (e) {}
   }
-  return Object.assign(fresh(), st);
+  st = Object.assign(fresh(), st);
+  if (!st.mathStart2nd) { for (const r of ["feed", "store", "frac", "place"]) { const L = st.levels[r]; if (L && !L.attempts) delete st.levels[r]; } st.mathStart2nd = true; } /* math first shipped starting at 3rd grade */
+  return st;
 }
 function save() { try { localStorage.setItem(KEY(kidId), JSON.stringify(S)); } catch (e) {} }
-function lv(room) { const start = MATH[room] ? 2 : 1; /* math starts at 3rd grade */ S.levels[room] = S.levels[room] || { level: start, streak: 0, misses: 0, attempts: 0, correct: 0, best: start }; if (S.levels[room].attempts === undefined) Object.assign(S.levels[room], { attempts: 0, correct: 0, best: S.levels[room].level }); return S.levels[room]; }
+function lv(room) { const start = 1; /* math starts at 2nd grade (L1) and graduates up */ S.levels[room] = S.levels[room] || { level: start, streak: 0, misses: 0, attempts: 0, correct: 0, best: start }; if (S.levels[room].attempts === undefined) Object.assign(S.levels[room], { attempts: 0, correct: 0, best: S.levels[room].level }); return S.levels[room]; }
 const today = new Date().toDateString();
 function poolFor(level) { return (kid.bonus && level >= 3) ? WORDS.concat(kid.bonus) : WORDS; }
 /* ZPD layer: words missed recently come back about 3x as often until they are earned back; the same word never repeats back to back */
@@ -565,7 +567,7 @@ function wrongFinal(word, guessHtml, explain) {
   idx++; actions.innerHTML = `<button class="btn" id="nextBtn">Next →</button>`; $("#nextBtn").onclick = nextProblem; $("#nextBtn").focus();
 }
 function diffWord(guess, right) { return right.split("").map((ch, i) => guess[i] === ch ? ch : `<span class="miss">${ch}</span>`).join(""); }
-function showLevelUp() { const L = lv(room), r = roomInfo(room); stage.innerHTML = `<div class="levelup"><div class="e">${r.icon}✨</div><div class="t">Level ${L.level}!</div><p>${MATH[room] ? `${r.name} is now <b>${MATH_GRADES[L.level - 1]}</b>.` : `You're now a <b>${kid.titles[Math.min(L.level - 1, kid.titles.length - 1)]}</b> at ${r.name}.`}${kid.bonus && L.level === 3 ? "<br>Bonus words are in play now." : ""}<br>Harder jobs, more ${kid.coinName}.</p></div>`; setFeedback("", ""); say(["p_12"]); actions.innerHTML = `<button class="btn mint" id="nextBtn">Let's go →</button>`; $("#nextBtn").onclick = nextProblem; $("#nextBtn").focus(); }
+function showLevelUp() { const L = lv(room), r = roomInfo(room); stage.innerHTML = `<div class="levelup"><div class="e">${r.icon}✨</div><div class="t">Level ${L.level}!</div><p>${MATH[room] ? `You graduated! ${r.name} is now <b>${MATH_GRADES[L.level - 1]}</b> math.` : `You're now a <b>${kid.titles[Math.min(L.level - 1, kid.titles.length - 1)]}</b> at ${r.name}.`}${kid.bonus && L.level === 3 ? "<br>Bonus words are in play now." : ""}<br>Harder jobs, more ${kid.coinName}.</p></div>`; setFeedback("", ""); say(["p_12"]); actions.innerHTML = `<button class="btn mint" id="nextBtn">Let's go →</button>`; $("#nextBtn").onclick = nextProblem; $("#nextBtn").focus(); }
 function showMission() { stage.innerHTML = `<div class="levelup"><div class="e">${kid.face}🎉</div><div class="t">Mission complete!</div><p>You earned ${kid.mission} ${kid.coinName} today.<br>Bonus: +10 ${kid.coin}</p></div>`; setFeedback("", ""); say(["p_25"]); actions.innerHTML = `<button class="btn ghost" id="shopGo">${kid.shopName}</button><button class="btn mint" id="nextBtn">Keep going →</button>`; $("#nextBtn").onclick = nextProblem; $("#shopGo").onclick = renderShop; }
 function finish() {
   $("#bar").style.width = "100%"; $("#counter").textContent = "Done!";
@@ -673,7 +675,7 @@ function renderLab(pool) {
 
 /* ---------- Camila: Rescue Math ----------
    Zone of proximal development, three layers:
-   1. Each math job has its own level. L1 = 2nd-grade warm-up, L2 = 3rd grade (where she starts), L3 = solid 3rd grade, L4 = 4th-grade stretch.
+   1. Each math job has its own level. L1 = 2nd grade (where she starts), L2 = 3rd grade, L3 = solid 3rd grade, L4 = 4th grade.
       Three first-try answers in a row moves her up; two problems that end wrong move her down (the same engine as spelling).
    2. The first wrong answer opens a picture hint (array, place columns, fraction bars, number line) and she tries again.
       Right after the hint = solved with help: half pay and the streak resets. That band, can't yet alone but can with a nudge, is the zone.
@@ -682,7 +684,7 @@ function renderLab(pool) {
    Supply Store:  +/− · L1 2-digit with regrouping · L2 3-digit add · L3 3-digit subtract, across zero · L4 two-step and 4-digit
    Treat Sharing: fractions · L1 halves/thirds/fourths · L2 to eighths, bigger unit piece · L3 compare, number line · L4 equivalent, fraction of a group
    Kibble Count:  place value · L1 3-digit · L2 4-digit, compare · L3 round to 10 and 100 · L4 5-digit, round to 1,000 */
-const MATH_GRADES = ["2nd-grade warm-up", "3rd grade", "3rd grade+", "4th-grade stretch"];
+const MATH_GRADES = ["2nd grade", "3rd grade", "3rd grade+", "4th grade"];
 const PETS = ["puppies", "kittens", "bunnies", "hamsters", "parrots", "turtles", "goats", "ducks"];
 const fmt = (n) => n.toLocaleString("en-US");
 const fr = (n, d) => `<span class="frac"><i>${n}</i><i>${d}</i></span>`;
@@ -947,7 +949,7 @@ $("#itemGrid").onclick = (e) => { const b = e.target.closest(".item"); if (!b) r
 /* ---------- grown-ups ---------- */
 let resetArmed = false;
 function renderGrown() {
-  show("grown"); $("#grownHint").textContent = kidId === "camila" ? "Spelling jobs practice this week's list a different way each: dictation, proofreading, letter order, and the week's phonics pattern. Rescue Math starts at 3rd grade (Level 2) and adapts per job: three first-try answers move up, two problems that end wrong move down. A first wrong answer opens a picture hint (array, place columns, fraction bars, number line); solving after the hint pays half and resets the streak. About 1 in 5 math problems is a stretch from the next level that never costs a level. Level 1 is a 2nd-grade warm-up, Level 4 is 4th-grade stretch." : "Each quest practices sight-word recognition a different way: word-to-meaning, letter order, letter identity, visual memory, sorting, speed recognition, sentence order, and reading aloud. Two wrong taps end a word with no pay, so guessing through every option never works. Three ZPD layers: per-quest levels, bonus words at level 3, and missed words returning more often.";
+  show("grown"); $("#grownHint").textContent = kidId === "camila" ? "Spelling jobs practice this week's list a different way each: dictation, proofreading, letter order, and the week's phonics pattern. Rescue Math starts at 2nd grade (Level 1) and adapts per job: three first-try answers move up, two problems that end wrong move down. A first wrong answer opens a picture hint (array, place columns, fraction bars, number line); solving after the hint pays half and resets the streak. About 1 in 5 math problems is a stretch from the next level that never costs a level. Levels: 1 = 2nd grade, 2 = 3rd grade, 3 = solid 3rd grade, 4 = 4th grade." : "Each quest practices sight-word recognition a different way: word-to-meaning, letter order, letter identity, visual memory, sorting, speed recognition, sentence order, and reading aloud. Two wrong taps end a word with no pay, so guessing through every option never works. Three ZPD layers: per-quest levels, bonus words at level 3, and missed words returning more often.";
   $("#statTable").innerHTML = `<tr><th>Job</th><th>Level</th><th>Best</th><th>Done</th><th>First-try %</th></tr>` + kid.rooms.concat(kid.mathRooms || []).map(r => { const L = lv(r.id); return `<tr><td>${r.icon} ${r.name}</td><td>${NOLEVEL[r.id] ? "–" : L.level + " / " + MAX_LEVEL + (MATH[r.id] ? ` (${MATH_GRADES[L.level - 1]})` : "")}</td><td>${NOLEVEL[r.id] ? "–" : L.best}</td><td>${L.attempts}</td><td>${L.attempts ? Math.round(L.correct / L.attempts * 100) + "%" : "–"}</td></tr>`; }).join("") + `<tr><td><b>Words seen right at least once</b></td><td colspan="4">${Object.keys(S.mastered).length} of ${WORDS.length + (kid.bonus ? kid.bonus.length : 0)}</td></tr>`;
   $("#resetMsg").textContent = ""; $("#resetBtn").textContent = "Reset this player"; resetArmed = false;
 }
