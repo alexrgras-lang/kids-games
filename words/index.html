@@ -166,6 +166,20 @@ input.spell { width: 100%; font-family: var(--display); font-size: 34px; font-we
 .progress { height: 12px; background: var(--soft); border-radius: 999px; overflow: hidden; margin-top: 10px; }
 .progress i { display: block; height: 100%; background: var(--coin); width: 0; transition: width .3s; }
 
+/* rescue math */
+.mq { font-size: 21px; font-weight: 800; text-align: center; margin: 4px 0 12px; text-wrap: balance; }
+.mq .big { display: block; font-family: var(--display); font-size: clamp(36px, 10vw, 54px); font-weight: 700; margin-top: 8px; }
+.frac { display: inline-flex; flex-direction: column; align-items: center; vertical-align: middle; line-height: 1.05; margin: 0 4px; font-family: var(--display); }
+.frac i { font-style: normal; } .frac i:first-child { border-bottom: 3px solid currentColor; padding: 0 5px 1px; }
+.choice .frac { font-size: 26px; }
+.stack { display: inline-grid; margin: 12px auto 0; font-family: var(--display); font-size: 34px; font-weight: 700; text-align: center; line-height: 1.25; }
+.stack .lab { font-size: 13px; color: var(--muted); } .stack .sum { border-top: 4px solid var(--fg); height: 6px; }
+.arr { display: grid; justify-content: center; gap: 2px; margin: 8px 0 2px; font-size: 18px; line-height: 1.1; letter-spacing: 3px; color: var(--accent); }
+.pics { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 10px; font-size: 22px; } .pics span { background: #fff; border: 2px solid var(--panel-edge); border-radius: 12px; padding: 4px 8px; }
+svg.fbar, svg.nline { display: block; margin: 10px auto; max-width: 100%; height: auto; color: var(--fg); }
+table.pv { width: auto; margin: 8px auto 2px; } table.pv th, table.pv td { text-align: center; padding: 4px 10px; } table.pv td { font-family: var(--display); font-size: 26px; font-weight: 700; } table.pv td.hi { color: var(--accent); background: var(--soft); border-radius: 8px; }
+.stretch { display: inline-block; background: #fff3d6; color: #8a5a00; border-radius: 999px; padding: 4px 12px; font-size: 14px; font-weight: 800; margin-bottom: 8px; }
+input.spell.num { text-transform: none; letter-spacing: 2px; }
 /* shop */
 .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 10px; }
 .item { border: 0; border-radius: 16px; background: var(--soft); border-bottom: 4px solid var(--panel-edge); padding: 12px 6px; display: grid; justify-items: center; gap: 2px; cursor: pointer; color: var(--fg); font-family: var(--body); }
@@ -237,6 +251,11 @@ canvas#confetti { position: fixed; inset: 0; width: 100%; height: 100%; pointer-
       <p class="hint" id="roomsHint"></p>
       <div class="rooms" id="rooms"></div>
     </div>
+    <div class="panel" style="margin-top:16px" id="mathPanel" hidden>
+      <h2>Rescue Math</h2>
+      <p class="hint" id="mathHint"></p>
+      <div class="rooms" id="mathRooms"></div>
+    </div>
     <div class="panel" style="margin-top:16px">
       <div class="row between"><h2 id="shelfTitle"></h2><button class="btn small" id="shopBtn"></button></div>
       <div class="shelf" id="shelf"></div>
@@ -287,7 +306,7 @@ canvas#confetti { position: fixed; inset: 0; width: 100%; height: 100%; pointer-
 const PROFILES = {
   camila: {
     name: "Camila", face: "🐾", tagline: "Pet Rescue · spelling", worldTitle: `Camila's <span>Pet Rescue</span>`,
-    label: "Week of 10/5 · Final e syllables · Test Friday 10/9",
+    label: "Week of 10/13 · Consonant digraphs · Test Friday 10/16",
     coin: "🐾", coinName: "paw coins", mission: 40, shelfTitle: "My rescue center", shopName: "Adoption center", shopHint: "Spend paw coins to adopt animals and stock the rescue.",
     roomsHint: "Every job uses this week's spelling words. Harder levels pay more paw coins.",
     titles: ["Volunteer", "Helper", "Vet Tech", "Trainer", "Rescue Manager", "Rescue Hero"],
@@ -295,28 +314,35 @@ const PROFILES = {
       { id: "notes",   icon: "📋", name: "Adoption Notes", blurb: "Write the missing word" },
       { id: "sign",    icon: "🪧", name: "Fix the Sign",   blurb: "Spot and fix the misspelling" },
       { id: "magnets", icon: "🧲", name: "Fridge Magnets", blurb: "Spell it with magnets" },
-      { id: "lab",     icon: "🔬", name: "Vet Lab",        blurb: "Magic e or sneaky e?" },
+      { id: "lab",     icon: "🔬", name: "Sound Lab",      blurb: "Which letter team is missing?" },
       { id: "sentence",icon: "📝", name: "Vet Notes",       blurb: "Put the note back in order" },
     ],
+    mathRooms: [
+      { id: "feed",  icon: "🥣", name: "Feeding Time",  blurb: "Times and sharing" },
+      { id: "store", icon: "🧾", name: "Supply Store",  blurb: "Add and subtract big numbers" },
+      { id: "frac",  icon: "🍪", name: "Treat Sharing", blurb: "Fractions" },
+      { id: "place", icon: "🔢", name: "Kibble Count",  blurb: "Place value and rounding" },
+    ],
+    mathHint: "Math jobs start at 3rd grade and move with you: three right in a row moves up, a wrong answer opens a hint.",
     shop: [["🐶", "Puppy", 10], ["🐱", "Kitten", 10], ["🐰", "Bunny", 14], ["🐹", "Hamster", 14], ["🐢", "Turtle", 18], ["🐦", "Finch", 18], ["🦜", "Parrot", 24], ["🐷", "Piglet", 26], ["🐑", "Lamb", 28], ["🐴", "Pony", 34], ["🦊", "Fox kit", 36], ["🦉", "Owl", 40], ["🐼", "Panda cub", 48], ["🦩", "Flamingo", 52], ["🐬", "Dolphin", 60], ["🦄", "Unicorn", 72], ["🏡", "New kennel", 20], ["🛁", "Bath station", 24], ["🎾", "Toy chest", 16], ["🏥", "Vet clinic", 56], ["🌳", "Play yard", 64], ["🚐", "Rescue van", 90], ["🏰", "Dream shelter", 120],
       ["🦔", "Hedgehog", 60], ["🐸", "Frog pond", 62], ["🐧", "Penguin", 66], ["🦦", "Otter", 70], ["🐨", "Koala", 74], ["🦘", "Kangaroo", 78], ["🦋", "Butterfly garden", 80], ["🐻", "Bear cub", 86], ["🦒", "Giraffe", 92], ["🦓", "Zebra", 96], ["🐘", "Elephant", 104], ["🐯", "Tiger cub", 110], ["🦁", "Lion cub", 116], ["🎪", "Adoption fair", 130], ["🏖️", "Beach day", 140], ["🚁", "Rescue helicopter", 160], ["🏝️", "Animal island", 190], ["🎓", "Vet school", 220], ["🌟", "Star of the rescue", 260], ["👑", "Rescue Queen crown", 320]],
     words: [
-      { w: "side",       s: "The kitten sleeps on its ___.",                       magic: true,  why: "The e makes the i say its name: s-I-de." },
-      { w: "sideways",   s: "The crab walks ___ across the tank.",                 magic: true,  why: "Two syllables: side + ways. The e in side makes the i long." },
-      { w: "male",       s: "The ___ parrot has the brightest feathers.",          magic: true,  why: "The e makes the a say its name: m-A-le." },
-      { w: "female",     s: "The ___ cat is named Luna.",                          magic: true,  why: "Two syllables: fe + male. The e in male makes the a long." },
-      { w: "wide",       s: "The dog opened its mouth ___ for a big yawn.",        magic: true,  why: "The e makes the i say its name: w-I-de." },
-      { w: "widespread", s: "Fleas can be ___ if we skip bath day.",               magic: true,  why: "Two syllables: wide + spread. The e in wide makes the i long." },
-      { w: "note",       s: "Leave a ___ for the night volunteer.",                magic: true,  why: "The e makes the o say its name: n-O-te." },
-      { w: "notebook",   s: "Write the puppy's weight in the ___.",                magic: true,  why: "Two syllables: note + book. The e in note makes the o long." },
-      { w: "fuse",       s: "The heat lamp went off when the ___ blew.",           magic: true,  why: "The e makes the u say its name: f-U-se." },
-      { w: "refuse",     s: "Some cats ___ to eat wet food.",                      magic: true,  why: "Two syllables: re + fuse. The e in fuse makes the u long." },
-      { w: "delete",     s: "Please ___ the old adoption posters.",                magic: true,  why: "Two syllables: de + lete. The final e makes the second e say its name." },
-      { w: "complete",   s: "The checkup is ___ and the bunny is healthy.",        magic: true,  why: "Two syllables: com + plete. The final e makes the e in plete long." },
-      { w: "there",      s: "The leashes hang over ___ by the door.",              magic: false, why: "Sneaky! It ends in e, but it sounds like 'air'. This one you just have to know." },
-      { w: "said",       s: "The vet ___ the puppy is healthy." },
-      { w: "them",       s: "The kittens are hungry, so feed ___ first." },
-      { w: "other",      s: "One rabbit is white and the ___ is brown." },
+      { w: "fish",      s: "The gold ___ swims in the rescue tank.",               dg: "sh",  why: "s and h team up to say /sh/: fi-SH." },
+      { w: "fishing",   s: "The cat sat by the pond, ___ for a snack.",           dg: "sh",  why: "fish + ing. The sh stays together: fi-SH-ing." },
+      { w: "chick",     s: "A baby ___ hatched at the rescue today.",             dg: "ch",  why: "c and h team up to say /ch/: CH-ick. The ck at the end is a team too." },
+      { w: "chicken",   s: "The ___ lays an egg every morning.",                  dg: "ch",  why: "c and h team up to say /ch/: CH-ick-en." },
+      { w: "cloth",     s: "Dry the wet puppy with a soft ___.",                  dg: "th",  why: "t and h team up to say /th/: clo-TH." },
+      { w: "washcloth", s: "Use a warm ___ to clean the kitten's face.",          dg: "th",  why: "wash + cloth. Two letter teams in one word: wa-SH-clo-TH." },
+      { w: "wish",      s: "I ___ we could adopt every puppy.",                   dg: "sh",  why: "s and h team up to say /sh/: wi-SH." },
+      { w: "wished",    s: "She ___ for a puppy on her birthday.",                dg: "sh",  why: "wish + ed. The ed sounds like /t/, but you still spell it ed." },
+      { w: "pitch",     s: "Can you ___ the ball to the dog?",                    dg: "tch", why: "Short vowel right before /ch/? Add a t: pi-TCH." },
+      { w: "pitching",  s: "Dad is ___ the tennis ball to the puppy.",            dg: "tch", why: "pitch + ing. Short i, so /ch/ is spelled tch: pi-TCH-ing." },
+      { w: "lunch",     s: "The puppies eat ___ at noon.",                        dg: "ch",  why: "After n, /ch/ is just ch, no t: lun-CH." },
+      { w: "lunchroom", s: "The volunteers eat in the ___.",                      dg: "ch",  why: "lunch + room. After n, /ch/ is just ch: lun-CH-room." },
+      { w: "after",     s: "We walk the dogs ___ lunch." },
+      { w: "little",    s: "The ___ hamster runs on its wheel." },
+      { w: "want",      s: "Do you ___ to feed the goats?" },
+      { w: "how",       s: "Do you know ___ many kittens are in the box?" },
     ],
   },
   luca: {
@@ -421,7 +447,7 @@ function loadState(id) {
   return Object.assign(fresh(), st);
 }
 function save() { try { localStorage.setItem(KEY(kidId), JSON.stringify(S)); } catch (e) {} }
-function lv(room) { S.levels[room] = S.levels[room] || { level: 1, streak: 0, misses: 0, attempts: 0, correct: 0, best: 1 }; if (S.levels[room].attempts === undefined) Object.assign(S.levels[room], { attempts: 0, correct: 0, best: S.levels[room].level }); return S.levels[room]; }
+function lv(room) { const start = MATH[room] ? 2 : 1; /* math starts at 3rd grade */ S.levels[room] = S.levels[room] || { level: start, streak: 0, misses: 0, attempts: 0, correct: 0, best: start }; if (S.levels[room].attempts === undefined) Object.assign(S.levels[room], { attempts: 0, correct: 0, best: S.levels[room].level }); return S.levels[room]; }
 const today = new Date().toDateString();
 function poolFor(level) { return (kid.bonus && level >= 3) ? WORDS.concat(kid.bonus) : WORDS; }
 /* ZPD layer: words missed recently come back about 3x as often until they are earned back; the same word never repeats back to back */
@@ -458,6 +484,10 @@ function renderLobby() {
   $("#roomsHint").textContent = kid.roomsHint;
   $("#rooms").innerHTML = kid.rooms.map(r => { const L = lv(r.id); const t = kid.titles[Math.min(L.level - 1, kid.titles.length - 1)]; return `<button class="room" data-room="${r.id}"><span class="icon">${r.icon}</span><b>${r.name}</b><small>${r.blurb}</small><span class="lvl">Level ${L.level} · ${t} <span class="dots">${[0, 1, 2].map(i => `<i class="${i < L.streak ? "on" : ""}"></i>`).join("")}</span></span></button>`; }).join("")
     + `<button class="room all" data-room="all"><span class="icon">${kid.face}</span><b>Full shift</b><small>A mix of every job, one after another</small><span class="lvl">Best for a quick 10 minutes</span></button>`;
+  $("#mathPanel").hidden = !kid.mathRooms;
+  if (kid.mathRooms) { $("#mathHint").textContent = kid.mathHint;
+    $("#mathRooms").innerHTML = kid.mathRooms.map(r => { const L = lv(r.id); return `<button class="room" data-room="${r.id}"><span class="icon">${r.icon}</span><b>${r.name}</b><small>${r.blurb}</small><span class="lvl">Level ${L.level} · ${MATH_GRADES[L.level - 1]} <span class="dots">${[0, 1, 2].map(i => `<i class="${i < L.streak ? "on" : ""}"></i>`).join("")}</span></span></button>`; }).join("")
+      + `<button class="room all" data-room="mathall"><span class="icon">🧮</span><b>Math shift</b><small>A mix of every math job</small><span class="lvl">Best for a quick 10 minutes</span></button>`; }
   $("#shelfTitle").textContent = kid.shelfTitle; $("#shopBtn").textContent = kid.shopName;
   const worlds = (S.worlds || []).map((n, i) => `<span class="worldbadge">🏆 World ${i + 1}: ${n} items</span>`).join(" ");
   $("#shelf").innerHTML = worlds + (S.owned.length ? S.owned.map(em => { const it = kid.shop.find(x => x[0] === em); return `<span title="${it ? it[1] : ""}">${em}</span>`; }).join("") : `<span class="empty">Nothing here yet. Earn ${kid.coinName} and visit the ${kid.shopName.toLowerCase()}!</span>`);
@@ -466,22 +496,24 @@ function renderLobby() {
   if (kid.bonus) { const unlocked = kid.rooms.some(r => lv(r.id).level >= 3); $("#bonusWrap").hidden = false; $("#bonusTitle").textContent = unlocked ? "Bonus words (in play)" : "Bonus words unlock at Level 3 in any job"; $("#bonusGrid").innerHTML = kid.bonus.map((it, i) => `<button class="word ${unlocked ? "" : "locked"}" data-list="bonus" data-i="${i}">${it.w}</button>`).join(""); }
   else $("#bonusWrap").hidden = true;
 }
-$("#rooms").onclick = (e) => { const b = e.target.closest(".room"); if (b) startRoom(b.dataset.room); };
+$("#rooms").onclick = $("#mathRooms").onclick = (e) => { const b = e.target.closest(".room"); if (b) startRoom(b.dataset.room); };
 document.addEventListener("click", (e) => { const b = e.target.closest(".word"); if (!b) return; sayWord((b.dataset.list === "bonus" ? kid.bonus : WORDS)[+b.dataset.i]); });
 $("#shopBtn").onclick = renderShop; $("#shopBack").onclick = renderLobby; $("#grownBtn").onclick = renderGrown; $("#grownBack").onclick = renderLobby; $("#backBtn").onclick = renderLobby;
 
 /* ---------- engine ---------- */
 let roomSel, room, cur, idx, total, firstTry, locked, roundCoins, strikes, maxStrikes;
 const stage = $("#stage"), feedback = $("#feedback"), actions = $("#actions");
-const RENDER = { notes: renderNotes, sign: renderSign, magnets: renderMagnets, lab: renderLab, sentence: renderSentence, signs: renderSigns, load: renderLoad, fixsign: renderFixSign, tags: renderTags, orders: renderOrders, sort: renderSort, dash: renderDash };
+const RENDER = { feed: renderMath, store: renderMath, frac: renderMath, place: renderMath, notes: renderNotes, sign: renderSign, magnets: renderMagnets, lab: renderLab, sentence: renderSentence, signs: renderSigns, load: renderLoad, fixsign: renderFixSign, tags: renderTags, orders: renderOrders, sort: renderSort, dash: renderDash };
 const NOLEVEL = { lab: true };
+const roomInfo = (id) => kid.rooms.concat(kid.mathRooms || []).find(x => x.id === id);
+const isStretch = () => !!(cur && cur.p && cur.p.stretch);
 function startRoom(r) { roomSel = r; idx = 0; roundCoins = 0; total = r === "all" ? 10 : 8; show("play"); nextProblem(); }
 function setFeedback(kind, html) { feedback.className = "feedback " + (kind || ""); feedback.innerHTML = html || ""; }
 function level() { return NOLEVEL[room] ? 1 : lv(room).level; }
-function updateBadge() { const r = kid.rooms.find(x => x.id === room); const L = lv(room); $("#roomBadge").innerHTML = `${r.icon} ${r.name}${NOLEVEL[room] ? "" : ` · Level ${L.level} <span class="dots">${[0, 1, 2].map(i => `<i class="${i < L.streak ? "on" : ""}"></i>`).join("")}</span>`}`; }
+function updateBadge() { const r = roomInfo(room); const L = lv(room); $("#roomBadge").innerHTML = `${r.icon} ${r.name}${NOLEVEL[room] ? "" : ` · Level ${L.level} <span class="dots">${[0, 1, 2].map(i => `<i class="${i < L.streak ? "on" : ""}"></i>`).join("")}</span>`}`; }
 function nextProblem() {
   if (idx >= total) return finish();
-  room = roomSel === "all" ? pick(kid.rooms).id : roomSel; const L = level();
+  room = roomSel === "all" ? pick(kid.rooms).id : roomSel === "mathall" ? pick(kid.mathRooms).id : roomSel; const L = level();
   const pool = poolFor(L); cur = null; firstTry = true; locked = false; strikes = 0; maxStrikes = 2;
   updateBadge(); setFeedback("", ""); actions.innerHTML = ""; stage.classList.remove("shake");
   $("#counter").textContent = `${idx + 1} of ${total}`; $("#bar").style.width = (idx / total * 100) + "%";
@@ -490,15 +522,17 @@ function nextProblem() {
 /* A wrong tap. The first one costs the bonus; the second ends the word with no pay, so clicking through every option never works. Returns true when the word is over. */
 function miss() {
   strikes++;
-  if (firstTry) { firstTry = false; const L = lv(room); L.streak = 0; noteMiss(cur && cur.w); }
+  if (firstTry) { firstTry = false; const L = lv(room); if (!isStretch()) L.streak = 0; noteMiss(cur && cur.w); }
   if (strikes >= maxStrikes) { fail(); return true; }
   return false;
 }
 function fail() {
   locked = true; finalWrong(); const w = cur && cur.w;
   stage.querySelectorAll(".hidden-word").forEach(m => m.classList.remove("hidden-word"));
-  if (w) say(["p_31", "w_" + w, sKey(cur)]);
-  setFeedback("bad", `Let's look together.${w ? `<div class="fix">${w}</div>` : ""}${cur && cur.s ? small(cur.s.replace("___", w)) : ""}`);
+  if (cur && cur.math) { const p = cur.p; stage.querySelectorAll(".choice").forEach(b => { if (b.dataset.v === String(p.ans)) b.classList.add("win"); }); const h = $("#hint"); if (h) { h.hidden = false; h.innerHTML = `<b>Hint.</b> ${p.hint}`; }
+    const shown = p.choices ? p.choices.find(c => c.v === String(p.ans)).h : fmt(p.ans); setFeedback("bad", `Let's look together.<div class="fix">${shown}</div>${small(p.work)}`); }
+  else { if (w) say(["p_31", "w_" + w, sKey(cur)]);
+  setFeedback("bad", `Let's look together.${w ? `<div class="fix">${w}</div>` : ""}${cur && cur.s ? small(cur.s.replace("___", w)) : ""}`); }
   $("#bar").style.width = ((idx + 1) / total * 100) + "%"; idx++;
   actions.innerHTML = `<button class="btn" id="nextBtn">Next →</button>`; $("#nextBtn").onclick = nextProblem; $("#nextBtn").focus();
   if (kid.bonus) setTimeout(() => { if ($("#nextBtn")) $("#nextBtn").click(); }, 3200);
@@ -508,10 +542,10 @@ function flyCoins(n) {
   el.style.left = (from.left + from.width / 2 - 30) + "px"; el.style.top = from.top + "px"; el.style.setProperty("--dx", (to.left + to.width / 2 - from.left - from.width / 2) + "px"); el.style.setProperty("--dy", (to.top - from.top) + "px");
   document.body.appendChild(el); setTimeout(() => el.remove(), 950);
 }
-function finalWrong() { const L = lv(room); L.attempts++; L.misses++; if (!NOLEVEL[room] && L.misses >= 2 && L.level > 1) { L.level--; L.misses = 0; } save(); updateBadge(); }
+function finalWrong() { const L = lv(room); L.attempts++; if (!isStretch()) L.misses++; /* a missed stretch never costs a level */ if (!NOLEVEL[room] && L.misses >= 2 && L.level > 1) { L.level--; L.misses = 0; } save(); updateBadge(); }
 function correct(word, extra) {
   locked = true; const L = lv(room); L.attempts++; L.correct++; if (word) S.mastered[word] = true; if (firstTry) noteHit(word);
-  const earned = firstTry ? level() * 2 : level(); roundCoins += earned; addCoins(earned);
+  const pay = level() + (isStretch() ? 1 : 0), earned = firstTry ? pay * 2 : pay; roundCoins += earned; addCoins(earned);
   let leveled = false;
   if (firstTry) { L.streak++; L.misses = Math.max(0, L.misses - 1); if (!NOLEVEL[room] && L.streak >= 3 && L.level < MAX_LEVEL) { L.level++; L.best = Math.max(L.best, L.level); L.streak = 0; leveled = true; } } else L.streak = 0;
   const missionJustDone = !S.missionDone && S.dayCoins >= kid.mission; if (missionJustDone) { S.missionDone = true; addCoins(10); }
@@ -531,7 +565,7 @@ function wrongFinal(word, guessHtml, explain) {
   idx++; actions.innerHTML = `<button class="btn" id="nextBtn">Next →</button>`; $("#nextBtn").onclick = nextProblem; $("#nextBtn").focus();
 }
 function diffWord(guess, right) { return right.split("").map((ch, i) => guess[i] === ch ? ch : `<span class="miss">${ch}</span>`).join(""); }
-function showLevelUp() { const L = lv(room), r = kid.rooms.find(x => x.id === room); stage.innerHTML = `<div class="levelup"><div class="e">${r.icon}✨</div><div class="t">Level ${L.level}!</div><p>You're now a <b>${kid.titles[Math.min(L.level - 1, kid.titles.length - 1)]}</b> at ${r.name}.${kid.bonus && L.level === 3 ? "<br>Bonus words are in play now." : ""}<br>Harder jobs, more ${kid.coinName}.</p></div>`; setFeedback("", ""); say(["p_12"]); actions.innerHTML = `<button class="btn mint" id="nextBtn">Let's go →</button>`; $("#nextBtn").onclick = nextProblem; $("#nextBtn").focus(); }
+function showLevelUp() { const L = lv(room), r = roomInfo(room); stage.innerHTML = `<div class="levelup"><div class="e">${r.icon}✨</div><div class="t">Level ${L.level}!</div><p>${MATH[room] ? `${r.name} is now <b>${MATH_GRADES[L.level - 1]}</b>.` : `You're now a <b>${kid.titles[Math.min(L.level - 1, kid.titles.length - 1)]}</b> at ${r.name}.`}${kid.bonus && L.level === 3 ? "<br>Bonus words are in play now." : ""}<br>Harder jobs, more ${kid.coinName}.</p></div>`; setFeedback("", ""); say(["p_12"]); actions.innerHTML = `<button class="btn mint" id="nextBtn">Let's go →</button>`; $("#nextBtn").onclick = nextProblem; $("#nextBtn").focus(); }
 function showMission() { stage.innerHTML = `<div class="levelup"><div class="e">${kid.face}🎉</div><div class="t">Mission complete!</div><p>You earned ${kid.mission} ${kid.coinName} today.<br>Bonus: +10 ${kid.coin}</p></div>`; setFeedback("", ""); say(["p_25"]); actions.innerHTML = `<button class="btn ghost" id="shopGo">${kid.shopName}</button><button class="btn mint" id="nextBtn">Keep going →</button>`; $("#nextBtn").onclick = nextProblem; $("#shopGo").onclick = renderShop; }
 function finish() {
   $("#bar").style.width = "100%"; $("#counter").textContent = "Done!";
@@ -546,10 +580,12 @@ function hearBtn(item) { actions.innerHTML = `<button class="btn ghost small" id
    Adoption Notes: L1 word shows 3s then hides, type it · L2 hear word + sentence clue · L3 hear word only · L4 hear the sentence only
    Fix the Sign:   L1 pick the right spelling of 3 · L2 tap the wrong word on a 2-line sign, then pick the fix · L3 tap wrong word of 3 lines, type the fix · L4 two wrong words
    Fridge Magnets: L1 first letter placed · L2 full scramble · L3 one extra magnet · L4 two extras, no sentence
-   Vet Lab:        magic e vs sneaky e, no levels */
+   Sound Lab:      which letter team (sh / ch / th / tch) fills the gap, no levels */
+/* the misspellings a kid actually makes with letter teams, tried first */
+const DIGRAPH_SLIPS = [[/tch/, "ch"], [/([aeiou])ch/, "$1tch"], [/sh/, "ch"], [/ch/, "sh"], [/th/, "f"], [/th/, "t"], [/ck/, "k"], [/ed$/, "t"], [/le$/, "el"], [/ow$/, "ou"]];
 function misspell(w, avoid) {
-  const vow = { a: "e", e: "a", i: "e", o: "u", u: "o" }; const out = new Set(); const tries = [
-    () => w.endsWith("e") ? w.slice(0, -1) : w + "e",
+  const vow = { a: "e", e: "a", i: "e", o: "u", u: "o" }; const out = new Set(); const slips = shuffle(DIGRAPH_SLIPS.filter(([re]) => re.test(w))); const tries = [
+    () => { const s = slips.shift(); return s ? w.replace(s[0], s[1]) : w.endsWith("e") ? w.slice(0, -1) : w + "e"; },
     () => { const i = rnd(1, w.length - 2); return w.slice(0, i) + w[i + 1] + w[i] + w.slice(i + 2); },
     () => { const vi = [...w].findIndex((c, i) => "aeiou".includes(c) && i < w.length - 1); return vi < 0 ? w + w[w.length - 1] : w.slice(0, vi) + vow[w[vi]] + w.slice(vi + 1); },
     () => { const ci = [...w].findIndex((c, i) => !"aeiou".includes(c) && i > 0 && i < w.length - 1); return ci < 0 ? w.slice(0, -1) : w.slice(0, ci) + w[ci] + w.slice(ci); },
@@ -625,14 +661,147 @@ function renderMagnets(pool, L) {
   setTimeout(() => say(["p_24", "w_" + w]), 300); draw();
 }
 function renderLab(pool) {
-  const item = cur = pickWord(pool.filter(x => x.magic !== undefined)); const w = item.w;
-  const vowelIdx = (() => { for (let i = w.length - 3; i >= 0; i--) if ("aeiou".includes(w[i])) return i; return -1; })();
-  const html = w.split("").map((ch, i) => i === vowelIdx ? `<span class="v">${ch}</span>` : (i === w.length - 1 ? `<span class="e">${ch}</span>` : ch)).join("");
-  stage.innerHTML = `<div class="job"><p class="q">Vet Lab test: does the e at the end make the <span style="color:var(--accent)">${w[vowelIdx]}</span> say its own name?</p><div class="bigword">${html}</div>
-    <div class="two"><button class="btn wand" data-a="true">✨ Magic e<br><small>the vowel says its name</small></button><button class="btn sneak" data-a="false">🕵️ Sneaky e<br><small>the vowel stays short</small></button></div><div class="rule" hidden id="why"></div></div>`;
-  hearBtn(item); setTimeout(() => say(["w_" + w]), 300);
-  stage.querySelector(".two").onclick = (e) => { const b = e.target.closest("button"); if (!b || locked) return; const right = (b.dataset.a === "true") === item.magic; const why = $("#why"); why.hidden = false; why.innerHTML = `<b>${item.magic ? "Magic e." : "Sneaky e."}</b> ${item.why}`;
-    if (right) correct(w); else { locked = true; miss(); finalWrong(); setFeedback("bad", "Not this time."); idx++; actions.innerHTML = `<button class="btn" id="nextBtn">Next →</button>`; $("#nextBtn").onclick = nextProblem; } };
+  const item = cur = pickWord(pool.filter(x => x.dg)); const w = item.w; const at = w.lastIndexOf(item.dg);
+  const html = `${w.slice(0, at)}<span class="v">__</span>${w.slice(at + item.dg.length)}`;
+  stage.innerHTML = `<div class="job"><p class="q">Sound Lab test: listen. Which letter team goes in the gap?</p><div class="bigword">${html}</div>
+    <div class="choices four" id="choices">${["sh", "ch", "th", "tch"].map(d => `<button class="choice" data-d="${d}">${d}</button>`).join("")}</div><div class="rule" hidden id="why"></div></div>`;
+  hearBtn(item); setTimeout(() => sayWord(item), 300);
+  $("#choices").onclick = (e) => { const b = e.target.closest(".choice"); if (!b || locked) return;
+    if (b.dataset.d === item.dg) { b.classList.add("win"); stage.querySelector(".bigword").innerHTML = `${w.slice(0, at)}<span class="v">${item.dg}</span>${w.slice(at + item.dg.length)}`; const why = $("#why"); why.hidden = false; why.innerHTML = `<b>${item.dg}</b> ${item.why}`; correct(w); }
+    else { b.classList.add("out"); if (miss()) return; say(["w_" + w]); setFeedback("bad", `That would spell <b>${w.slice(0, at) + b.dataset.d + w.slice(at + item.dg.length)}</b>. Listen again.`); } };
+}
+
+/* ---------- Camila: Rescue Math ----------
+   Zone of proximal development, three layers:
+   1. Each math job has its own level. L1 = 2nd-grade warm-up, L2 = 3rd grade (where she starts), L3 = solid 3rd grade, L4 = 4th-grade stretch.
+      Three first-try answers in a row moves her up; two problems that end wrong move her down (the same engine as spelling).
+   2. The first wrong answer opens a picture hint (array, place columns, fraction bars, number line) and she tries again.
+      Right after the hint = solved with help: half pay and the streak resets. That band, can't yet alone but can with a nudge, is the zone.
+   3. About 1 in 5 problems is a ⭐ stretch from the level above. A miss there never costs her level; a first-try win pays the higher rate.
+   Feeding Time:  ×/÷ · L1 equal groups of 2/5/10 · L2 facts ×2-5, ×10, sharing · L3 facts ×6-9, missing factor, ÷ · L4 2-digit × 1-digit, two-step
+   Supply Store:  +/− · L1 2-digit with regrouping · L2 3-digit add · L3 3-digit subtract, across zero · L4 two-step and 4-digit
+   Treat Sharing: fractions · L1 halves/thirds/fourths · L2 to eighths, bigger unit piece · L3 compare, number line · L4 equivalent, fraction of a group
+   Kibble Count:  place value · L1 3-digit · L2 4-digit, compare · L3 round to 10 and 100 · L4 5-digit, round to 1,000 */
+const MATH_GRADES = ["2nd-grade warm-up", "3rd grade", "3rd grade+", "4th-grade stretch"];
+const PETS = ["puppies", "kittens", "bunnies", "hamsters", "parrots", "turtles", "goats", "ducks"];
+const fmt = (n) => n.toLocaleString("en-US");
+const fr = (n, d) => `<span class="frac"><i>${n}</i><i>${d}</i></span>`;
+const fv = (s) => { const [n, d] = s.split("/"); return fr(n, d); };
+const strip = (h) => h.replace(/<span class="frac"><i>([^<]*)<\/i><i>([^<]*)<\/i><\/span>/g, "$1 over $2").replace(/<[^>]+>/g, " ").replace(/×/g, " times ").replace(/÷/g, " divided by ").replace(/−/g, " minus ").replace(/\s+/g, " ").trim();
+const dots = (rows, cols) => `<div class="arr">${Array.from({ length: rows }, () => `<div>${"●".repeat(cols)}</div>`).join("")}</div>`;
+function bar(n, d) { const W = 240; return `<svg class="fbar" viewBox="0 0 ${W} 38" width="${W}" height="38">${Array.from({ length: d }, (_, i) => `<rect x="${i * W / d + 1.5}" y="1.5" width="${W / d - 3}" height="35" rx="5" fill="${i < n ? "var(--accent)" : "#fff"}" stroke="var(--tile-edge)" stroke-width="2.5"/>`).join("")}</svg>`; }
+function nline(lo, hi, step, mark, labels) {
+  const W = 320, x = (v) => 18 + (v - lo) / (hi - lo) * (W - 36); let t = `<line x1="${x(lo)}" x2="${x(hi)}" y1="28" y2="28" stroke="currentColor" stroke-width="2.5"/>`;
+  for (let k = 0; k <= Math.round((hi - lo) / step); k++) { const v = lo + k * step; t += `<line x1="${x(v)}" x2="${x(v)}" y1="20" y2="36" stroke="currentColor" stroke-width="2"/>`; }
+  for (const [v, s] of labels) t += `<text x="${x(v)}" y="54" text-anchor="middle" font-size="13" font-weight="700" fill="currentColor">${s}</text>`;
+  if (mark !== null) t += `<circle cx="${x(mark)}" cy="28" r="7" fill="var(--rose)"/>`;
+  return `<svg class="nline" viewBox="0 0 ${W} 60" width="${W}" height="60">${t}</svg>`;
+}
+function stack(a, b, op) {
+  const n = Math.max(String(a).length, String(b).length); const lab = ["O", "T", "H", "Th"].slice(0, n).reverse();
+  const cells = (v) => String(v).padStart(n, " ").split("").map(c => `<span>${c.trim()}</span>`).join("");
+  return `<div class="stack" style="grid-template-columns: repeat(${n + 1}, 1em)"><span></span>${lab.map(l => `<span class="lab">${l}</span>`).join("")}<span></span>${cells(a)}<span>${op}</span>${cells(b)}${'<span class="sum"></span>'.repeat(n + 1)}</div>`;
+}
+function chart(n, hi) { const s = String(n), labs = ["Ones", "Tens", "Hundreds", "Thousands", "Ten thousands"]; return `<table class="pv"><tr>${[...s].map((_, i) => `<th>${labs[s.length - 1 - i]}</th>`).join("")}</tr><tr>${[...s].map((c, i) => `<td class="${i === hi ? "hi" : ""}">${c}</td>`).join("")}</tr></table>`; }
+/* a number with `len` digits where one nonzero digit appears exactly once, so "the value of the 4" has one answer */
+function digitQ(len) {
+  for (;;) { const n = rnd(10 ** (len - 1), 10 ** len - 1), s = String(n), i = rnd(0, len - 1), c = s[i];
+    if (c !== "0" && s.indexOf(c) === s.lastIndexOf(c)) return { n, i, c, val: +c * 10 ** (len - 1 - i), place: ["ones", "tens", "hundreds", "thousands", "ten thousands"][len - 1 - i] }; }
+}
+const CMP = [{ v: "lt", h: "&lt;" }, { v: "eq", h: "=" }, { v: "gt", h: "&gt;" }];
+const cmp = (a, b) => a < b ? "lt" : a > b ? "gt" : "eq";
+function fracChoices(right, wrongs) { const out = [right]; for (const w of wrongs) { const [n, d] = w.split("/").map(Number); if (!out.includes(w) && n > 0 && d > 0 && n <= d) out.push(w); if (out.length === 4) break; } return shuffle(out).map(v => ({ v, h: fv(v) })); }
+
+const MATH = {
+  feed(L) {
+    const pet = pick(PETS);
+    if (L === 1) { const g = rnd(2, 5), k = pick([2, 5, 10, rnd(3, 4)]);
+      return { q: `${g} bowls. ${k} treats in each bowl.<br>How many treats in all?<div class="pics">${Array.from({ length: g }, () => `<span>${"🦴".repeat(k)}</span>`).join("")}</div>`, ans: g * k,
+        hint: `Count by ${k}s, one bowl at a time: ${k}, ${2 * k}, … keep going for all ${g} bowls.`, work: `${g} groups of ${k} is ${g * k}. ${g} × ${k} = ${g * k}` }; }
+    if (L === 2) {
+      if (Math.random() < .65) { const a = pick([2, 3, 4, 5, 10]), b = rnd(2, 10), p = a * b;
+        return Math.random() < .5 ? { q: `<span class="big">${a} × ${b} = ?</span>`, ans: p, hint: `${a} rows of ${b}. Count by ${b}s, one row at a time.${dots(a, b)}`, work: `${a} × ${b} = ${p}` }
+          : { q: `${a} ${pet} each get ${b} treats.<br>How many treats is that?`, ans: p, hint: `Each row is one of the ${pet}.${dots(a, b)}`, work: `${a} × ${b} = ${p}` }; }
+      const d = pick([2, 3, 4, 5, 10]), k = rnd(2, 10), P = d * k;
+      return { q: `${P} treats are shared equally by ${d} ${pet}.<br>How many treats does each one get?`, ans: k, hint: `Think: ${d} × ? = ${P}. Deal the treats out, one row for each pet, until all ${P} are gone.${dots(d, k)}`, work: `${P} ÷ ${d} = ${k}, because ${d} × ${k} = ${P}` };
+    }
+    if (L === 3) { const a = pick([6, 7, 8, 9]), b = rnd(3, 10), P = a * b, t = Math.random();
+      if (t < .4) return { q: `<span class="big">${a} × ${b} = ?</span>`, ans: P, hint: `Break it apart: ${a} × ${b} is 5 × ${b} plus ${a - 5} × ${b}. Do each part, then add them.`, work: `5 × ${b} = ${5 * b}, ${a - 5} × ${b} = ${(a - 5) * b}, ${5 * b} + ${(a - 5) * b} = ${P}` };
+      if (t < .7) return { q: `<span class="big">? × ${a} = ${P}</span>`, ans: b, hint: `Count by ${a}s and keep track of how many jumps it takes to reach ${P}: ${a}, ${2 * a}, ${3 * a}, …`, work: `${b} × ${a} = ${P}` };
+      return { q: `${P} ${pet} are going to new homes. ${a} fit in each van.<br>How many vans do we need?`, ans: b, hint: `Think: ${a} × ? = ${P}. Count by ${a}s: ${a}, ${2 * a}, ${3 * a}, …`, work: `${P} ÷ ${a} = ${b}` };
+    }
+    if (Math.random() < .55) { const t = pick([rnd(12, 19), rnd(21, 29), rnd(31, 39)]), m = rnd(3, 7), tens = t - t % 10, ones = t % 10;
+      return { q: `Each bag holds ${t} scoops of kibble.<br>How many scoops are in ${m} bags?`, ans: t * m, hint: `Break ${t} into ${tens} + ${ones}. Find ${tens} × ${m}, then ${ones} × ${m}, then add.`, work: `${tens} × ${m} = ${tens * m}, ${ones} × ${m} = ${ones * m}, ${tens * m} + ${ones * m} = ${t * m}` }; }
+    const a = rnd(3, 8), b = rnd(4, 9), c = rnd(3, a * b - 5);
+    return { q: `There are ${a} boxes with ${b} chew toys in each box. The ${pet} wrecked ${c} toys.<br>How many toys are left?`, ans: a * b - c, hint: `Two steps. First: how many toys in all? (${a} × ${b}). Then take away the ${c} wrecked ones.`, work: `${a} × ${b} = ${a * b}, then ${a * b} − ${c} = ${a * b - c}` };
+  },
+
+  store(L) {
+    if (L === 1) {
+      if (Math.random() < .5) { const ao = rnd(3, 9), bo = rnd(10 - ao, 9), at = rnd(1, 6), bt = rnd(1, 8 - at), a = at * 10 + ao, b = bt * 10 + bo;
+        return { q: `The rescue has ${a} dog toys and gets ${b} more. How many now?${stack(a, b, "+")}`, ans: a + b, hint: `Ones first: ${ao} + ${bo} = ${ao + bo}. Write the ${(ao + bo) % 10} and carry 1 ten over to the tens.`, work: `${a} + ${b} = ${a + b}` }; }
+      const at = rnd(3, 9), ao = rnd(0, 5), a = at * 10 + ao, bo = rnd(ao + 1, 9), b = rnd(1, at - 1) * 10 + bo;
+      return { q: `There were ${a} cat toys. The kittens lost ${b}. How many are left?${stack(a, b, "−")}`, ans: a - b, hint: `Ones: you can't take ${bo} from ${ao}. Trade 1 ten for 10 ones, so it's ${ao + 10} − ${bo}. Then do the tens.`, work: `${a} − ${b} = ${a - b}` };
+    }
+    if (L === 2) { let a, b; do { a = rnd(120, 580); b = rnd(110, 399); } while (!((a % 10 + b % 10 >= 10) || (Math.floor(a / 10) % 10 + Math.floor(b / 10) % 10 >= 10)) || a + b >= 1000);
+      const ao = a % 10, bo = b % 10, s = ao + bo;
+      return { q: `The rescue had ${a} cans of food. A store gave ${b} more.<br>How many cans now?${stack(a, b, "+")}`, ans: a + b, hint: `Line up the places. Ones first: ${ao} + ${bo} = ${s}${s >= 10 ? `, so write ${s % 10} and carry 1 ten` : ""}. Then add the tens, then the hundreds.`, work: `${a} + ${b} = ${a + b}` }; }
+    if (L === 3) { let a, b; const zero = Math.random() < .45;
+      do { a = zero ? rnd(2, 9) * 100 + rnd(0, 8) : rnd(300, 999); b = rnd(100, a - 40); } while (b % 10 <= a % 10 || a - b < 20);
+      return { q: `${a} people came to adoption day. ${b} went home by noon.<br>How many are still there?${stack(a, b, "−")}`, ans: a - b, hint: `Ones: you can't take ${b % 10} from ${a % 10}, so trade 1 ten for 10 ones.${Math.floor(a / 10) % 10 === 0 ? " No tens to trade? Trade 1 hundred for 10 tens first, then trade 1 of those tens." : ""}`, work: `${a} − ${b} = ${a - b}` }; }
+    if (Math.random() < .5) { const a = rnd(300, 700), b = rnd(100, a - 100), c = rnd(100, Math.min(400, 999 - (a - b)));
+      return { q: `The shelter had ${a} pounds of food. They used ${b} pounds, then got ${c} more.<br>How many pounds now?`, ans: a - b + c, hint: `Two steps. First ${a} − ${b}. Then add ${c} to what you got.`, work: `${a} − ${b} = ${a - b}, then ${a - b} + ${c} = ${a - b + c}` }; }
+    const a = rnd(1200, 4999), b = rnd(1100, 3999);
+    return { q: `Last year ${fmt(a)} people visited. This year ${fmt(b)} visited.<br>How many in both years?${stack(a, b, "+")}`, ans: a + b, hint: `Same as 3 digits, one more column. Ones, tens, hundreds, then thousands. Carry when a column makes 10 or more.`, work: `${fmt(a)} + ${fmt(b)} = ${fmt(a + b)}` };
+  },
+
+  frac(L) {
+    const pet = pick(PETS);
+    const name = (ds) => { const d = pick(ds), n = d === 2 ? 1 : rnd(1, d - 1);
+      return { q: `What fraction of the dog biscuit is frosted?${bar(n, d)}`, ans: `${n}/${d}`, choices: fracChoices(`${n}/${d}`, [`${d - n}/${d}`, `${n}/${d - n}`, `${n}/${d + 1}`, `1/${d}`, `${n + 1}/${d}`, `1/${d + 2}`]),
+        hint: `Count ALL the equal parts: that is the bottom number. Count the frosted parts: that is the top number.`, work: `${n} of ${d} equal parts are frosted: ${n}/${d}` }; };
+    if (L === 1) return name([2, 3, 4]);
+    if (L === 2) { if (Math.random() < .6) return name([3, 4, 6, 8]);
+      const [a, b] = shuffle([2, 3, 4, 6, 8]).slice(0, 2);
+      return { q: `Two biscuits the same size. One is cut into ${a} equal pieces, one into ${b}.<br>Which piece is bigger?`, ans: `1/${Math.min(a, b)}`, choices: shuffle([`1/${a}`, `1/${b}`]).map(v => ({ v, h: fv(v) })), hint: `Look at both.${bar(1, a)}${bar(1, b)}More pieces means each piece is smaller.`, work: `1/${Math.min(a, b)} is bigger than 1/${Math.max(a, b)}` }; }
+    if (L === 3) { const t = Math.random();
+      if (t < .66) { let n1, d1, n2, d2; if (t < .33) { d1 = d2 = pick([3, 4, 6, 8]); n1 = rnd(1, d1 - 1); n2 = rnd(1, d1 - 1); } else { n1 = n2 = rnd(1, 3); [d1, d2] = shuffle([2, 3, 4, 6, 8].filter(d => d > n1)).slice(0, 2); }
+        const ans = cmp(n1 / d1, n2 / d2);
+        return { q: `Which sign goes in the circle?<span class="big">${fr(n1, d1)} ◯ ${fr(n2, d2)}</span>`, ans, choices: CMP, hint: `Draw them the same size and compare.${bar(n1, d1)}${bar(n2, d2)}${d1 === d2 ? "Same size pieces, so more pieces is more." : "Same number of pieces, so bigger pieces is more."}`, work: `${n1}/${d1} ${{ lt: "<", eq: "=", gt: ">" }[ans]} ${n2}/${d2}` }; }
+      const d = pick([3, 4, 6, 8]), n = rnd(1, d - 1);
+      return { q: `The puppy ran from 0 to the dot. What fraction is the dot at?${nline(0, 1, 1 / d, n / d, [[0, "0"], [1, "1"]])}`, ans: `${n}/${d}`, choices: fracChoices(`${n}/${d}`, [`${n}/${d + 1}`, `${n + 1}/${d}`, `${n - 1}/${d}`, `${d - n}/${d}`, `1/${n + 1}`]), hint: `Count the jumps from 0 to 1. That is the bottom number. Count the jumps from 0 to the dot. That is the top number.`, work: `${n} jumps out of ${d}: ${n}/${d}` }; }
+    if (Math.random() < .5) { const [n, d] = pick([[1, 2], [1, 3], [2, 3], [1, 4], [3, 4]]); const k = pick([2, 3, 4].filter(k => d * k <= 12));
+      return { q: `Fill in the missing number.<span class="big">${fr(n, d)} = ${fr("?", d * k)}</span>`, ans: n * k, hint: `Same bar, cut into ${d * k} pieces instead of ${d}. How many of the small pieces are frosted?${bar(n, d)}${bar(n * k, d * k)}`, work: `${n}/${d} = ${n * k}/${d * k}` }; }
+    const d = pick([2, 3, 4]), g = rnd(2, 5), n = d === 2 ? 1 : rnd(1, d - 1), tot = d * g;
+    return { q: `${fr(n, d)} of the ${tot} ${pet} need a bath.<br>How many is that?`, ans: n * g, hint: `Split the ${tot} ${pet} into ${d} equal groups. Then count ${n === 1 ? "1 group" : `${n} groups`}.<div class="pics">${Array.from({ length: d }, () => `<span>${"🐾".repeat(g)}</span>`).join("")}</div>`, work: `${tot} ÷ ${d} = ${g} in each group, ${n} × ${g} = ${n * g}` };
+  },
+
+  place(L) {
+    const valueQ = (len) => { const p = digitQ(len);
+      return { q: `The kibble counter says<span class="big">${fmt(p.n)}</span>What is the <b>${p.c}</b> worth?`, ans: p.val, hint: `Find the ${p.c} in the chart. Which place is it in?${chart(p.n, p.i)}`, work: `The ${p.c} is in the ${p.place} place, so it is worth ${fmt(p.val)}.` }; };
+    const cmpQ = (lo, hi) => { let a = rnd(lo, hi), b = rnd(lo, hi); if (Math.random() < .5) b = +String(a).slice(0, -2) * 100 + rnd(0, 99); if (a === b) b++;
+      const ans = cmp(a, b); return { q: `Which shelter has more food?<span class="big">${fmt(a)} ◯ ${fmt(b)}</span>`, ans, choices: CMP.filter(c => c.v !== "eq"), hint: `Start at the biggest place and compare one place at a time until the digits are different.${chart(a, -1)}${chart(b, -1)}`, work: `${fmt(a)} ${{ lt: "<", gt: ">" }[ans]} ${fmt(b)}` }; };
+    const roundQ = (to) => { let n; do { n = to === 10 ? rnd(101, 999) : to === 100 ? rnd(110, 990) : rnd(1100, 9900); } while (n % to === 0);
+      const lo = n - n % to, hi = lo + to, ans = n - lo >= to / 2 ? hi : lo;
+      return { q: `Round to the nearest ${fmt(to)}.<span class="big">${fmt(n)}</span>`, ans, hint: `${fmt(n)} is between ${fmt(lo)} and ${fmt(hi)}. Is the dot past the halfway mark? Halfway or more rounds up.${nline(lo, hi, to / 10, n, [[lo, fmt(lo)], [lo + to / 2, "halfway"], [hi, fmt(hi)]])}`, work: `${fmt(n)} is closer to ${fmt(ans)}${n - lo === to / 2 ? " (halfway rounds up)" : ""}.` }; };
+    if (L === 1) { if (Math.random() < .6) return valueQ(3); const h = rnd(1, 9), t = rnd(0, 9), o = rnd(0, 9);
+      return { q: `Put it together.<span class="big">${h * 100} + ${t * 10} + ${o} = ?</span>`, ans: h * 100 + t * 10 + o, hint: `${h} hundreds, ${t} tens, ${o} ones. Write each digit in its place.${chart(h * 100 + t * 10 + o, -1)}`, work: `${h * 100} + ${t * 10} + ${o} = ${h * 100 + t * 10 + o}` }; }
+    if (L === 2) return Math.random() < .6 ? valueQ(4) : cmpQ(1000, 9999);
+    if (L === 3) return roundQ(Math.random() < .5 ? 10 : 100);
+    const t = Math.random(); return t < .4 ? valueQ(5) : t < .75 ? roundQ(1000) : cmpQ(10000, 99999);
+  },
+};
+function renderMath(pool, L) {
+  const stretch = L < MAX_LEVEL && Math.random() < .2; const p = MATH[room](stretch ? L + 1 : L); p.stretch = stretch; cur = { math: true, p };
+  const nc = p.choices ? p.choices.length : 0;
+  stage.innerHTML = `<div class="job">${stretch ? `<span class="stretch">⭐ Stretch problem · extra ${kid.coin}</span>` : ""}<div class="mq">${p.q}</div>${nc ? `<div class="choices ${nc === 4 ? "four" : nc === 2 ? "two" : ""}" id="choices">${p.choices.map(c => `<button class="choice" data-v="${c.v}">${c.h}</button>`).join("")}</div>` : `<input class="spell num" id="answer" inputmode="numeric" autocomplete="off" aria-label="Your answer" placeholder="?">`}<div class="rule" hidden id="hint"></div></div>`;
+  actions.innerHTML = `<button class="btn ghost small" id="readBtn">🔊 Read it</button>${nc ? "" : `<button class="btn" id="checkBtn">Check</button>`}`;
+  $("#readBtn").onclick = () => speak(strip(p.q.replace(/<div class="(pics|stack)"[\s\S]*?<\/div>|<svg[\s\S]*?<\/svg>/g, "")).replace(/= \?/g, "equals what?").replace(/(^|\s)\?(\s)/g, "$1what$2").replace(/◯/g, "blank"));
+  const wrong = (el) => { if (el) el.classList.add("out"); if (miss()) return; const h = $("#hint"); h.hidden = false; h.innerHTML = `<b>Hint.</b> ${p.hint}`; setFeedback("bad", "Not yet. Use the hint and try again."); };
+  if (nc) $("#choices").onclick = (e) => { const b = e.target.closest(".choice"); if (!b || locked) return; if (b.dataset.v === String(p.ans)) { b.classList.add("win"); correct(null, p.work); } else wrong(b); };
+  else { const input = $("#answer"); input.focus();
+    const check = () => { if (locked) return; const g = input.value.replace(/[^0-9]/g, ""); if (!g) return; if (+g === p.ans) correct(null, p.work); else { input.value = ""; input.classList.add("shake"); setTimeout(() => input.classList.remove("shake"), 400); wrong(); } };
+    $("#checkBtn").onclick = check; input.onkeydown = (e) => { if (e.key === "Enter") { if (locked) { const n = $("#nextBtn"); if (n) n.click(); } else check(); } }; }
 }
 
 /* ---------- Luca: Rescue Garage jobs ----------
@@ -778,8 +947,8 @@ $("#itemGrid").onclick = (e) => { const b = e.target.closest(".item"); if (!b) r
 /* ---------- grown-ups ---------- */
 let resetArmed = false;
 function renderGrown() {
-  show("grown"); $("#grownHint").textContent = kidId === "camila" ? "Each job practices this week's spelling list a different way: dictation, proofreading, letter order, and the week's phonics pattern." : "Each quest practices sight-word recognition a different way: word-to-meaning, letter order, letter identity, visual memory, sorting, speed recognition, sentence order, and reading aloud. Two wrong taps end a word with no pay, so guessing through every option never works. Three ZPD layers: per-quest levels, bonus words at level 3, and missed words returning more often.";
-  $("#statTable").innerHTML = `<tr><th>Job</th><th>Level</th><th>Best</th><th>Done</th><th>First-try %</th></tr>` + kid.rooms.map(r => { const L = lv(r.id); return `<tr><td>${r.icon} ${r.name}</td><td>${NOLEVEL[r.id] ? "–" : L.level + " / " + MAX_LEVEL}</td><td>${NOLEVEL[r.id] ? "–" : L.best}</td><td>${L.attempts}</td><td>${L.attempts ? Math.round(L.correct / L.attempts * 100) + "%" : "–"}</td></tr>`; }).join("") + `<tr><td><b>Words seen right at least once</b></td><td colspan="4">${Object.keys(S.mastered).length} of ${WORDS.length + (kid.bonus ? kid.bonus.length : 0)}</td></tr>`;
+  show("grown"); $("#grownHint").textContent = kidId === "camila" ? "Spelling jobs practice this week's list a different way each: dictation, proofreading, letter order, and the week's phonics pattern. Rescue Math starts at 3rd grade (Level 2) and adapts per job: three first-try answers move up, two problems that end wrong move down. A first wrong answer opens a picture hint (array, place columns, fraction bars, number line); solving after the hint pays half and resets the streak. About 1 in 5 math problems is a stretch from the next level that never costs a level. Level 1 is a 2nd-grade warm-up, Level 4 is 4th-grade stretch." : "Each quest practices sight-word recognition a different way: word-to-meaning, letter order, letter identity, visual memory, sorting, speed recognition, sentence order, and reading aloud. Two wrong taps end a word with no pay, so guessing through every option never works. Three ZPD layers: per-quest levels, bonus words at level 3, and missed words returning more often.";
+  $("#statTable").innerHTML = `<tr><th>Job</th><th>Level</th><th>Best</th><th>Done</th><th>First-try %</th></tr>` + kid.rooms.concat(kid.mathRooms || []).map(r => { const L = lv(r.id); return `<tr><td>${r.icon} ${r.name}</td><td>${NOLEVEL[r.id] ? "–" : L.level + " / " + MAX_LEVEL + (MATH[r.id] ? ` (${MATH_GRADES[L.level - 1]})` : "")}</td><td>${NOLEVEL[r.id] ? "–" : L.best}</td><td>${L.attempts}</td><td>${L.attempts ? Math.round(L.correct / L.attempts * 100) + "%" : "–"}</td></tr>`; }).join("") + `<tr><td><b>Words seen right at least once</b></td><td colspan="4">${Object.keys(S.mastered).length} of ${WORDS.length + (kid.bonus ? kid.bonus.length : 0)}</td></tr>`;
   $("#resetMsg").textContent = ""; $("#resetBtn").textContent = "Reset this player"; resetArmed = false;
 }
 $("#resetBtn").onclick = () => { if (!resetArmed) { resetArmed = true; $("#resetBtn").textContent = "Tap again to confirm"; $("#resetMsg").textContent = `Clears ${kid.name}'s ${kid.coinName}, shelf and levels.`; return; } S = fresh(); S.day = today; save(); renderGrown(); $("#resetMsg").textContent = "Reset done."; };
