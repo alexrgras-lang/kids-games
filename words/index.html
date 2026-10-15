@@ -294,7 +294,9 @@ canvas#confetti { position: fixed; inset: 0; width: 100%; height: 100%; pointer-
       <div class="row between" style="margin-bottom:10px"><button class="btn ghost small" id="grownBack">← Back</button><span class="badge">For grown-ups</span></div>
       <p class="hint" id="grownHint"></p>
       <div class="tblwrap"><table id="statTable"></table></div>
-      <p class="hint" style="margin-top:14px">Progress is saved in this browser only. Levels move up after 3 first-try correct in a row and down after 2 misses in a row. Missed words come back about three times as often until they're earned back.</p>
+      <h2 style="margin-top:18px">Sync across computers</h2>
+      <div id="syncBox"></div>
+      <p class="hint" style="margin-top:14px">Without sync, progress is saved in this browser only. Levels move up after 3 first-try correct in a row and down after 2 misses in a row. Missed words come back about three times as often until they're earned back.</p>
       <div class="row"><button class="btn ghost small" id="resetBtn">Reset this player</button><span id="resetMsg" class="hint" style="margin:0"></span></div>
     </div>
   </section>
@@ -448,7 +450,7 @@ function loadState(id) {
   if (!st.mathStart2nd) { for (const r of ["feed", "store", "frac", "place"]) { const L = st.levels[r]; if (L && !L.attempts) delete st.levels[r]; } st.mathStart2nd = true; } /* math first shipped starting at 3rd grade */
   return st;
 }
-function save() { try { localStorage.setItem(KEY(kidId), JSON.stringify(S)); } catch (e) {} }
+function save() { S.savedAt = Date.now(); try { localStorage.setItem(KEY(kidId), JSON.stringify(S)); } catch (e) {} pushSoon(kidId, S); }
 function lv(room) { const start = 1; /* math starts at 2nd grade (L1) and graduates up */ S.levels[room] = S.levels[room] || { level: start, streak: 0, misses: 0, attempts: 0, correct: 0, best: start }; if (S.levels[room].attempts === undefined) Object.assign(S.levels[room], { attempts: 0, correct: 0, best: S.levels[room].level }); return S.levels[room]; }
 const today = new Date().toDateString();
 function poolFor(level) { return (kid.bonus && level >= 3) ? WORDS.concat(kid.bonus) : WORDS; }
@@ -951,9 +953,62 @@ let resetArmed = false;
 function renderGrown() {
   show("grown"); $("#grownHint").textContent = kidId === "camila" ? "Spelling jobs practice this week's list a different way each: dictation, proofreading, letter order, and the week's phonics pattern. Rescue Math starts at 2nd grade (Level 1) and adapts per job: three first-try answers move up, two problems that end wrong move down. A first wrong answer opens a picture hint (array, place columns, fraction bars, number line); solving after the hint pays half and resets the streak. About 1 in 5 math problems is a stretch from the next level that never costs a level. Levels: 1 = 2nd grade, 2 = 3rd grade, 3 = solid 3rd grade, 4 = 4th grade." : "Each quest practices sight-word recognition a different way: word-to-meaning, letter order, letter identity, visual memory, sorting, speed recognition, sentence order, and reading aloud. Two wrong taps end a word with no pay, so guessing through every option never works. Three ZPD layers: per-quest levels, bonus words at level 3, and missed words returning more often.";
   $("#statTable").innerHTML = `<tr><th>Job</th><th>Level</th><th>Best</th><th>Done</th><th>First-try %</th></tr>` + kid.rooms.concat(kid.mathRooms || []).map(r => { const L = lv(r.id); return `<tr><td>${r.icon} ${r.name}</td><td>${NOLEVEL[r.id] ? "–" : L.level + " / " + MAX_LEVEL + (MATH[r.id] ? ` (${MATH_GRADES[L.level - 1]})` : "")}</td><td>${NOLEVEL[r.id] ? "–" : L.best}</td><td>${L.attempts}</td><td>${L.attempts ? Math.round(L.correct / L.attempts * 100) + "%" : "–"}</td></tr>`; }).join("") + `<tr><td><b>Words seen right at least once</b></td><td colspan="4">${Object.keys(S.mastered).length} of ${WORDS.length + (kid.bonus ? kid.bonus.length : 0)}</td></tr>`;
-  $("#resetMsg").textContent = ""; $("#resetBtn").textContent = "Reset this player"; resetArmed = false;
+  $("#resetMsg").textContent = ""; $("#resetBtn").textContent = "Reset this player"; resetArmed = false; renderSync();
 }
 $("#resetBtn").onclick = () => { if (!resetArmed) { resetArmed = true; $("#resetBtn").textContent = "Tap again to confirm"; $("#resetMsg").textContent = `Clears ${kid.name}'s ${kid.coinName}, shelf and levels.`; return; } S = fresh(); S.day = today; save(); renderGrown(); $("#resetMsg").textContent = "Reset done."; };
+
+/* ---------- cloud sync ----------
+   Progress lives in this browser (localStorage) and, once sync is on, in a small Supabase table keyed by a family code.
+   Every save stamps savedAt and pushes a moment later; opening a player or coming back to the tab pulls, and the newer save wins.
+   The first time a device joins a code, its progress is combined with the cloud copy (animals from both, the higher coin count) so nothing is lost.
+   The code travels in the link (?sync=CODE), so a bookmarked link opens synced on any computer. */
+const SYNC_URL = "https://mvvjoaluidddzjifxkai.supabase.co", SYNC_KEY = "sb_publishable_8YFBnVdvuCfmT3hWXU-nzA_DhX8QTkC";
+const syncOn = () => !!syncCode && !SYNC_URL.startsWith("__");
+let syncCode = null, syncStatus = "", pushTimers = {};
+try { const q = new URLSearchParams(location.search).get("sync"); if (q) localStorage.setItem("wq-sync", q.trim().toUpperCase()); syncCode = localStorage.getItem("wq-sync"); } catch (e) {}
+async function rpc(fn, args) {
+  const r = await fetch(`${SYNC_URL}/rest/v1/rpc/${fn}`, { method: "POST", headers: { apikey: SYNC_KEY, Authorization: `Bearer ${SYNC_KEY}`, "Content-Type": "application/json" }, body: JSON.stringify(args) });
+  if (!r.ok) throw new Error("sync " + r.status); return r.status === 204 ? null : r.json();
+}
+function pushSoon(id, st) { if (!syncOn()) return; clearTimeout(pushTimers[id]); pushTimers[id] = setTimeout(() => rpc("put_save", { p_code: syncCode, p_kid: id, p_data: st }).then(() => { syncStatus = "Synced " + new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }); }).catch(() => { syncStatus = "Offline. Will sync on the next save."; }), 1200); }
+function mergeFirst(a, b) { /* joining a code: keep everything from both devices */
+  const m = Object.assign(fresh(), (a.savedAt || 0) >= (b.savedAt || 0) ? a : b);
+  m.coins = Math.max(a.coins || 0, b.coins || 0); m.owned = [...new Set([...(a.owned || []), ...(b.owned || [])])];
+  m.mastered = Object.assign({}, b.mastered, a.mastered); m.worlds = ((a.worlds || []).length >= (b.worlds || []).length ? a.worlds : b.worlds) || [];
+  m.levels = Object.assign({}, b.levels); for (const [k, v] of Object.entries(a.levels || {})) if (!m.levels[k] || (v.attempts || 0) > (m.levels[k].attempts || 0)) m.levels[k] = v;
+  m.savedAt = Date.now(); return m;
+}
+/* pull every player's cloud save; returns true when something local changed */
+async function pullAll(first) {
+  if (!syncOn()) return false; let changed = false;
+  try { const rows = await rpc("get_saves", { p_code: syncCode }) || [];
+    for (const id of Object.keys(PROFILES)) { const row = rows.find(r => r.kid === id); const local = loadState(id);
+      if (!row) { if (first || local.savedAt) pushSoon(id, local); continue; }
+      const next = first ? mergeFirst(local, row.data) : (row.data.savedAt || 0) > (local.savedAt || 0) ? Object.assign(fresh(), row.data) : null;
+      if (next) { try { localStorage.setItem(KEY(id), JSON.stringify(next)); } catch (e) {} if (id === kidId) S = next; changed = true; if (first) pushSoon(id, next); } }
+    syncStatus = "Synced " + new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }); if (first) try { localStorage.setItem("wq-sync-joined", syncCode); } catch (e) {}
+  } catch (e) { syncStatus = "Offline. Playing on this computer's copy."; }
+  return changed;
+}
+function refreshAfterPull() { if (!$("#lobby").hidden) renderLobby(); else if (!$("#pick").hidden) renderPick(); else if (!$("#shop").hidden) renderShop(); else if (!$("#grown").hidden) renderGrown(); if (kidId) $("#coins").textContent = S.coins; }
+/* only redraw when she isn't mid-problem */
+const firstJoin = () => { try { return localStorage.getItem("wq-sync-joined") !== syncCode; } catch (e) { return true; } };
+const pullAndRefresh = (first) => pullAll(first).then(ch => { if (ch && $("#play").hidden) refreshAfterPull(); else if (!$("#grown").hidden) renderSync(); });
+document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") pullAndRefresh(firstJoin()); });
+const CODE_CHARS = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
+function newCode() { const a = new Uint32Array(10); crypto.getRandomValues(a); const s = [...a].map(n => CODE_CHARS[n % CODE_CHARS.length]).join(""); return s.slice(0, 5) + "-" + s.slice(5); }
+function syncLink() { return location.origin + location.pathname + "?sync=" + syncCode; }
+function renderSync() {
+  const el = $("#syncBox"); if (!el) return;
+  if (SYNC_URL.startsWith("__")) { el.innerHTML = `<p class="hint">Sync isn't set up yet.</p>`; return; }
+  el.innerHTML = syncCode
+    ? `<p class="hint" style="margin:0 0 8px"><b>Sync is on.</b> Family code <b>${syncCode}</b>. ${syncStatus}</p><p class="hint" style="margin:0 0 8px">On another computer, open this link once (or bookmark it):<br><input class="spell" id="syncLink" readonly value="${syncLink()}" style="font-size:14px;letter-spacing:0;text-transform:none;padding:8px"></p><div class="row"><button class="btn ghost small" id="copyLink">Copy link</button><button class="btn ghost small" id="syncOff">Turn off on this computer</button></div>`
+    : `<p class="hint" style="margin:0 0 8px">Keep coins, animals and levels the same on every computer.</p><div class="row"><button class="btn small" id="syncNew">Turn on sync</button><input class="spell" id="syncJoin" placeholder="or enter a code" style="font-size:16px;letter-spacing:1px;padding:8px;max-width:180px"><button class="btn ghost small" id="syncJoinBtn">Join</button></div>`;
+  const join = (code) => { try { localStorage.setItem("wq-sync", code); } catch (e) {} syncCode = code; syncStatus = "Syncing…"; renderSync(); pullAll(firstJoin()).then(() => { refreshAfterPull(); renderSync(); }); };
+  if (syncCode) { $("#copyLink").onclick = () => { const i = $("#syncLink"); i.select(); try { navigator.clipboard.writeText(i.value); } catch (e) { document.execCommand("copy"); } $("#copyLink").textContent = "Copied"; };
+    $("#syncOff").onclick = () => { try { localStorage.removeItem("wq-sync"); } catch (e) {} syncCode = null; history.replaceState(null, "", location.pathname); renderSync(); }; }
+  else { $("#syncNew").onclick = () => join(newCode()); $("#syncJoinBtn").onclick = () => { const v = $("#syncJoin").value.trim().toUpperCase(); if (v.replace(/-/g, "").length >= 10) join(v); else $("#syncJoin").classList.add("shake"); }; }
+}
 
 /* ---------- confetti ---------- */
 function confetti(n) {
@@ -964,7 +1019,7 @@ function confetti(n) {
 }
 
 /* ---------- boot ---------- */
-(function boot() { let last = null; try { last = localStorage.getItem("wq-last"); } catch (e) {} if (last && PROFILES[last]) pickKid(last); else renderPick(); })();
+(function boot() { let last = null; try { last = localStorage.getItem("wq-last"); } catch (e) {} if (last && PROFILES[last]) pickKid(last); else renderPick(); if (syncOn()) pullAndRefresh(firstJoin()); })();
 </script>
 
 </body>
