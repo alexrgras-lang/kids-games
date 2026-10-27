@@ -308,7 +308,7 @@ canvas#confetti { position: fixed; inset: 0; width: 100%; height: 100%; pointer-
 const PROFILES = {
   camila: {
     name: "Camila", face: "🐾", tagline: "Pet Rescue · spelling", worldTitle: `Camila's <span>Pet Rescue</span>`,
-    label: "Week of 10/19 · Consonant digraphs · Test Thursday 10/22",
+    label: "Week of 10/26 · Long a · Test Friday 10/30",
     coin: "🐾", coinName: "paw coins", mission: 40, shelfTitle: "My rescue center", shopName: "Adoption center", shopHint: "Spend paw coins to adopt animals and stock the rescue.",
     roomsHint: "Every job uses this week's spelling words. Harder levels pay more paw coins.",
     titles: ["Volunteer", "Helper", "Vet Tech", "Trainer", "Rescue Manager", "Rescue Hero"],
@@ -329,22 +329,22 @@ const PROFILES = {
     shop: [["🐶", "Puppy", 10], ["🐱", "Kitten", 10], ["🐰", "Bunny", 14], ["🐹", "Hamster", 14], ["🐢", "Turtle", 18], ["🐦", "Finch", 18], ["🦜", "Parrot", 24], ["🐷", "Piglet", 26], ["🐑", "Lamb", 28], ["🐴", "Pony", 34], ["🦊", "Fox kit", 36], ["🦉", "Owl", 40], ["🐼", "Panda cub", 48], ["🦩", "Flamingo", 52], ["🐬", "Dolphin", 60], ["🦄", "Unicorn", 72], ["🏡", "New kennel", 20], ["🛁", "Bath station", 24], ["🎾", "Toy chest", 16], ["🏥", "Vet clinic", 56], ["🌳", "Play yard", 64], ["🚐", "Rescue van", 90], ["🏰", "Dream shelter", 120],
       ["🦔", "Hedgehog", 60], ["🐸", "Frog pond", 62], ["🐧", "Penguin", 66], ["🦦", "Otter", 70], ["🐨", "Koala", 74], ["🦘", "Kangaroo", 78], ["🦋", "Butterfly garden", 80], ["🐻", "Bear cub", 86], ["🦒", "Giraffe", 92], ["🦓", "Zebra", 96], ["🐘", "Elephant", 104], ["🐯", "Tiger cub", 110], ["🦁", "Lion cub", 116], ["🎪", "Adoption fair", 130], ["🏖️", "Beach day", 140], ["🚁", "Rescue helicopter", 160], ["🏝️", "Animal island", 190], ["🎓", "Vet school", 220], ["🌟", "Star of the rescue", 260], ["👑", "Rescue Queen crown", 320]],
     words: [
-      { w: "when",       s: "Call me ___ the puppy wakes up.",                     dg: "wh",         why: "w and h team up to say /w/: WH-en, like in whale." },
-      { w: "whenever",   s: "The cat purrs ___ you scratch her chin.",             dg: "wh",         why: "when + ever. The wh team starts it off: WH-en-ever." },
-      { w: "photo",      s: "Take a ___ of the new kitten for the website.",       dg: "ph",         why: "p and h team up to say /f/: PH-oto, like in phone." },
-      { w: "photograph", s: "This ___ shows the bunny on adoption day.",           dg: "ph",         why: "ph shows up twice, and both say /f/: PH-oto-gra-PH." },
-      { w: "thing",      s: "The first ___ a puppy needs is fresh water.",         dg: ["th", "ng"], why: "Two teams: th at the start and ng at the end. TH-i-NG." },
-      { w: "something",  s: "The parrot wants ___ to eat.",                        dg: ["th", "ng"], why: "some + thing. The th and ng teams both live in thing." },
-      { w: "thank",      s: "We ___ the volunteers every Friday.",                 dg: ["th", "nk"], why: "th at the start, nk at the end: TH-a-NK." },
-      { w: "thankful",   s: "The rescued dog looks so ___ for his warm bed.",      dg: ["th", "nk"], why: "thank + ful. The th and nk teams stay together." },
-      { w: "whispering", s: "Keep ___ so the sleeping kittens stay asleep.",       dg: ["wh", "ng"], why: "wh at the start, ng at the end: WH-isper-i-NG." },
-      { w: "telephone",  s: "Answer the ___ when a family calls about a pet.",     dg: "ph",         why: "tele + phone. ph says /f/ in the middle: tele-PH-one." },
-      { w: "kingdom",    s: "The lion is the king of the animal ___.",             dg: "ng",         why: "king + dom. ng says /ng/ like in ring: ki-NG-dom." },
-      { w: "unsinkable", s: "The otter floats like an ___ little boat.",           dg: "nk",         why: "un + sink + able. nk says /ngk/ like in pink: un-si-NK-able." },
-      { w: "white",      s: "The ___ rabbit has pink ears.",                       dg: "wh",         why: "wh says /w/: WH-ite. Not w-i-t-e!" },
-      { w: "draw",       s: "Let's ___ a picture of the pony for the sign." },
-      { w: "about",      s: "Tell the family ___ the turtle's favorite food." },
-      { w: "five",       s: "We fed ___ hungry puppies this morning." },
+      { w: "pain",      s: "The vet checks if the puppy is in ___.",              dg: "ai",   why: "a and i team up to say long a in the middle of a word: p-AI-n." },
+      { w: "stay",      s: "Teach the dog to sit and ___.",                        dg: "ay",   why: "ay is the long a team that ends a word: st-AY." },
+      { w: "space",     s: "The new kennel has ___ for three cats.",               dg: "a_e",  why: "The silent e at the end jumps back over the c and makes the a say its name: sp-A-c-E." },
+      { w: "great",     s: "Fluffy is a ___ dog for a family with kids.",          dg: "ea",   why: "ea usually says long e, but in great it says long a: gr-EA-t. A rule breaker to remember." },
+      { w: "waste",     s: "Don't ___ the kibble, scoop just enough.",             dg: "a_e",  why: "Magic e again: w-A-st-E. The e at the end makes the a say its name." },
+      { w: "weight",    s: "The vet writes down each puppy's ___.",                dg: "eigh", why: "eigh is a four-letter team for long a: w-EIGH-t, like eight." },
+      { w: "mailbox",   s: "The adoption letter is in the ___.",                   dg: "ai",   why: "mail + box. ai sits in the middle of mail: m-AI-l-box." },
+      { w: "player",    s: "The kitten is a rough ___ with the yarn.",             dg: "ay",   why: "play + er. ay ends the word play, then er is added: pl-AY-er." },
+      { w: "outbreak",  s: "The vet stopped an ___ of fleas at the shelter.",      dg: "ea",   why: "out + break. ea says long a in break, like in great: br-EA-k." },
+      { w: "neighbor",  s: "Our ___ adopted the gray bunny.",                      dg: "eigh", why: "eigh says long a: n-EIGH-bor. Same team as eight and weight." },
+      { w: "workplace", s: "The rescue center is a busy ___.",                     dg: "a_e",  why: "work + place. The silent e makes the a long in place: pl-A-c-E." },
+      { w: "invade",    s: "The ants tried to ___ the dog food bin.",              dg: "a_e",  why: "in + vade. The silent e at the end makes the a say its name: in-v-A-d-E." },
+      { w: "school",    s: "The puppies go to training ___ on Mondays." },
+      { w: "or",        s: "Do you want a cat ___ a dog?" },
+      { w: "any",       s: "Does the hamster need ___ more bedding?" },
+      { w: "small",     s: "The ___ kitten fits in one hand." },
     ],
   },
   luca: {
@@ -584,13 +584,13 @@ function hearBtn(item) { actions.innerHTML = `<button class="btn ghost small" id
    Adoption Notes: L1 word shows 3s then hides, type it · L2 hear word + sentence clue · L3 hear word only · L4 hear the sentence only
    Fix the Sign:   L1 pick the right spelling of 3 · L2 tap the wrong word on a 2-line sign, then pick the fix · L3 tap wrong word of 3 lines, type the fix · L4 two wrong words
    Fridge Magnets: L1 first letter placed · L2 full scramble · L3 one extra magnet · L4 two extras, no sentence
-   Sound Lab:      which letter team fills the gap (choices come from the week's `dg` values; a word may list several), no levels */
+   Sound Lab:      which letter team fills the gap (choices come from the week's `dg` values; a word may list several; a split team like a_e is written with _), no levels */
 /* the misspellings a kid actually makes with letter teams, tried first */
-const DIGRAPH_SLIPS = [[/tch/, "ch"], [/([aeiou])ch/, "$1tch"], [/sh/, "ch"], [/ch/, "sh"], [/th/, "f"], [/th/, "t"], [/ck/, "k"], [/ed$/, "t"], [/le$/, "el"], [/ow$/, "ou"], [/wh/, "w"], [/ph/, "f"], [/ng/, "n"], [/nk/, "ngk"], [/nk/, "nck"]];
+const DIGRAPH_SLIPS = [[/tch/, "ch"], [/([aeiou])ch/, "$1tch"], [/sh/, "ch"], [/ch/, "sh"], [/th/, "f"], [/th/, "t"], [/ck/, "k"], [/ed$/, "t"], [/le$/, "el"], [/ow$/, "ou"], [/wh/, "w"], [/ph/, "f"], [/ng/, "n"], [/nk/, "ngk"], [/nk/, "nck"], [/ai([^aeiou])/, "a$1e"], [/ai/, "ay"], [/ay/, "ai"], [/ea/, "ai"], [/ea/, "ae"], [/eigh/, "ay"], [/eigh/, "a"], [/a([^aeiou])e/, "a$1"], [/a([^aeiou])e/, "ai$1"]];
 function misspell(w, avoid) {
   const vow = { a: "e", e: "a", i: "e", o: "u", u: "o" }; const out = new Set(); const slips = shuffle(DIGRAPH_SLIPS.filter(([re]) => re.test(w))); const tries = [
     () => { const s = slips.shift(); return s ? w.replace(s[0], s[1]) : w.endsWith("e") ? w.slice(0, -1) : w + "e"; },
-    () => { const i = rnd(1, w.length - 2); return w.slice(0, i) + w[i + 1] + w[i] + w.slice(i + 2); },
+    () => { if (w.length < 3) return w + w[w.length - 1]; const i = rnd(1, w.length - 2); return w.slice(0, i) + w[i + 1] + w[i] + w.slice(i + 2); },
     () => { const vi = [...w].findIndex((c, i) => "aeiou".includes(c) && i < w.length - 1); return vi < 0 ? w + w[w.length - 1] : w.slice(0, vi) + vow[w[vi]] + w.slice(vi + 1); },
     () => { const ci = [...w].findIndex((c, i) => !"aeiou".includes(c) && i > 0 && i < w.length - 1); return ci < 0 ? w.slice(0, -1) : w.slice(0, ci) + w[ci] + w.slice(ci); },
     () => { const i = rnd(1, w.length - 2); return w.slice(0, i) + w.slice(i + 1); },
@@ -664,17 +664,31 @@ function renderMagnets(pool, L) {
   $("#tiles").onclick = (e) => { const b = e.target.closest(".tile"); if (!b || locked || picked.includes(+b.dataset.k)) return; picked.push(+b.dataset.k); draw(); if (picked.length === letters.length) $("#checkBtn").click(); };
   setTimeout(() => say(["p_24", "w_" + w]), 300); draw();
 }
+const VOWEL_TEAMS = ["ai", "ay", "a_e", "ea", "ei", "eigh", "ey"], CONSONANT_TEAMS = ["sh", "ch", "th", "tch", "wh", "ph", "ng", "nk", "ck"];
+/* where a letter team sits in a word; a split team like a_e spans the consonant between its two letters */
+function teamSlot(w, dg) {
+  if (dg.includes("_")) { const [a, b] = dg.split("_"); let m, at = -1; const re = new RegExp(a + "[^aeiou]" + b, "g"); while ((m = re.exec(w))) at = m.index;
+    return { at, len: 3, gap: `<span class="v">_</span>${w[at + 1]}<span class="v">_</span>`, show: `<span class="v">${a}</span>${w[at + 1]}<span class="v">${b}</span>` }; }
+  const at = w.lastIndexOf(dg); return { at, len: dg.length, gap: `<span class="v">${"_".repeat(Math.max(2, dg.length))}</span>`, show: `<span class="v">${dg}</span>` };
+}
+/* what the word would spell with the wrong team dropped into the slot */
+function withTeam(w, slot, dg, team) {
+  const head = w.slice(0, slot.at), tail = w.slice(slot.at + slot.len);
+  if (dg.includes("_")) return team.includes("_") ? head + team.replace("_", w[slot.at + 1]) + tail : head + team + w[slot.at + 1] + tail;
+  if (team.includes("_")) { const [a, b] = team.split("_"); return tail && !"aeiou".includes(tail[0]) ? head + a + tail[0] + b + tail.slice(1) : head + a + b + tail; }
+  return head + team + tail;
+}
 function renderLab(pool) {
-  const item = cur = pickWord(pool.filter(x => x.dg)); const w = item.w; const dg = Array.isArray(item.dg) ? pick(item.dg) : item.dg; const at = w.lastIndexOf(dg);
-  const weekTeams = [...new Set(pool.flatMap(x => x.dg ? [].concat(x.dg) : []))]; const padTeams = ["sh", "ch", "th", "tch", "wh", "ph", "ng", "nk", "ck"].filter(d => !weekTeams.includes(d));
+  const item = cur = pickWord(pool.filter(x => x.dg)); const w = item.w; const dg = Array.isArray(item.dg) ? pick(item.dg) : item.dg; const slot = teamSlot(w, dg);
+  const weekTeams = [...new Set(pool.flatMap(x => x.dg ? [].concat(x.dg) : []))]; const family = weekTeams.some(d => VOWEL_TEAMS.includes(d)) ? VOWEL_TEAMS : CONSONANT_TEAMS; const padTeams = family.filter(d => !weekTeams.includes(d));
   const teams = shuffle([dg].concat(shuffle(weekTeams.filter(d => d !== dg)).concat(padTeams).slice(0, 3)));
-  const html = `${w.slice(0, at)}<span class="v">__</span>${w.slice(at + dg.length)}`;
+  const html = `${w.slice(0, slot.at)}${slot.gap}${w.slice(slot.at + slot.len)}`;
   stage.innerHTML = `<div class="job"><p class="q">Sound Lab test: listen. Which letter team goes in the gap?</p><div class="bigword">${html}</div>
     <div class="choices four" id="choices">${teams.map(d => `<button class="choice" data-d="${d}">${d}</button>`).join("")}</div><div class="rule" hidden id="why"></div></div>`;
   hearBtn(item); setTimeout(() => sayWord(item), 300);
   $("#choices").onclick = (e) => { const b = e.target.closest(".choice"); if (!b || locked) return;
-    if (b.dataset.d === dg) { b.classList.add("win"); stage.querySelector(".bigword").innerHTML = `${w.slice(0, at)}<span class="v">${dg}</span>${w.slice(at + dg.length)}`; const why = $("#why"); why.hidden = false; why.innerHTML = `<b>${dg}</b> ${item.why}`; correct(w); }
-    else { b.classList.add("out"); if (miss()) return; say(["w_" + w]); setFeedback("bad", `That would spell <b>${w.slice(0, at) + b.dataset.d + w.slice(at + dg.length)}</b>. Listen again.`); } };
+    if (b.dataset.d === dg) { b.classList.add("win"); stage.querySelector(".bigword").innerHTML = `${w.slice(0, slot.at)}${slot.show}${w.slice(slot.at + slot.len)}`; const why = $("#why"); why.hidden = false; why.innerHTML = `<b>${dg}</b> ${item.why}`; correct(w); }
+    else { b.classList.add("out"); if (miss()) return; say(["w_" + w]); setFeedback("bad", `That would spell <b>${withTeam(w, slot, dg, b.dataset.d)}</b>. Listen again.`); } };
 }
 
 /* ---------- Camila: Rescue Math ----------
