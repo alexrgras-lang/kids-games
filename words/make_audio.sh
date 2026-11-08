@@ -12,6 +12,7 @@ const PHRASES=eval(js.match(/const PHRASES = (\[[^\]]*\]);/)[1]);
 const out={};
 for(const [id,p] of Object.entries(PROFILES)) for(const it of (p.words||[]).concat(p.bonus||[])){ out["w_"+it.w]=it.w; out[(id==="camila"?"sc_":"s_")+it.w]=it.s.includes("___")?it.s.replace("___",it.w):it.s; }
 for(const l of "abcdefghijklmnopqrstuvwxyz") out["l_"+l]=l;
+for(let i=0;i<=20;i++) out["n_"+i]=String(i);
 PHRASES.forEach((t,i)=>out["p_"+i]=t);
 fs.writeFileSync("/tmp/wq-manifest.json", JSON.stringify(out));'
 python3 - <<'PY'

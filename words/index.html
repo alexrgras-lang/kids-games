@@ -180,6 +180,14 @@ svg.fbar, svg.nline { display: block; margin: 10px auto; max-width: 100%; height
 table.pv { width: auto; margin: 8px auto 2px; } table.pv th, table.pv td { text-align: center; padding: 4px 10px; } table.pv td { font-family: var(--display); font-size: 26px; font-weight: 700; } table.pv td.hi { color: var(--accent); background: var(--soft); border-radius: 8px; }
 .stretch { display: inline-block; background: #fff3d6; color: #8a5a00; border-radius: 999px; padding: 4px 12px; font-size: 14px; font-weight: 800; margin-bottom: 8px; }
 input.spell.num { text-transform: none; letter-spacing: 2px; }
+/* minecraft math (Luca) */
+.choice.num { font-size: clamp(30px, 9vw, 44px); padding: 18px 6px; }
+.choice.side { padding: 10px 6px; } .choice.side .pics { margin-top: 0; } .choice.side small { font-size: 24px; font-family: var(--display); color: var(--fg); margin-top: 6px; }
+.pics.mobs { font-size: 30px; gap: 6px; } .pics.mobs span { padding: 4px 6px; position: relative; line-height: 1.15; } .pics.mobs span small { display: block; font-size: 13px; font-weight: 800; color: var(--muted); line-height: 1; margin-top: 3px; font-family: var(--body); }
+.pics.mobs span.gone { opacity: .45; } .pics.mobs span.gone::after { content: "💥"; position: absolute; inset: 0; display: grid; place-items: center; font-size: 28px; opacity: 1; }
+.pics .br { flex-basis: 100%; height: 0; }
+.two-groups { display: flex; align-items: center; justify-content: center; gap: 6px; flex-wrap: wrap; } .two-groups b { font-size: 32px; font-family: var(--display); }
+.ntrack { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; margin-top: 8px; } .ntrack span { min-width: 30px; padding: 4px 3px; background: #fff; border: 2px solid var(--panel-edge); border-radius: 8px; text-align: center; font-family: var(--display); font-weight: 700; font-size: 16px; } .ntrack span.hi { background: var(--accent); color: #fff; border-color: var(--accent-dark); }
 /* shop */
 .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 10px; }
 .item { border: 0; border-radius: 16px; background: var(--soft); border-bottom: 4px solid var(--panel-edge); padding: 12px 6px; display: grid; justify-items: center; gap: 2px; cursor: pointer; color: var(--fg); font-family: var(--body); }
@@ -252,7 +260,7 @@ canvas#confetti { position: fixed; inset: 0; width: 100%; height: 100%; pointer-
       <div class="rooms" id="rooms"></div>
     </div>
     <div class="panel" style="margin-top:16px" id="mathPanel" hidden>
-      <h2>Rescue Math</h2>
+      <h2 id="mathTitle">Rescue Math</h2>
       <p class="hint" id="mathHint"></p>
       <div class="rooms" id="mathRooms"></div>
     </div>
@@ -363,6 +371,14 @@ const PROFILES = {
       { id: "dash",   icon: "🚃", name: "Minecart Dash",  blurb: "Tap the right cart before it's gone" },
       { id: "sentence",icon: "📜", name: "Build a Sentence", blurb: "Put the villager's words in order" },
     ],
+    mathTitle: "Minecraft Math", mathGrades: ["Numbers to 5", "Numbers to 10", "Numbers to 10 ⭐", "Numbers to 20"],
+    mathRooms: [
+      { id: "count",  icon: "🐑", name: "Count the Mobs", blurb: "How many? Tap the number" },
+      { id: "more",   icon: "📦", name: "Bigger Chest",   blurb: "Which chest has more?" },
+      { id: "craft",  icon: "⚒️", name: "Crafting Table", blurb: "Put them together, or a creeper takes some" },
+      { id: "blocks", icon: "🔢", name: "Number Blocks",  blurb: "Hear it and tap it. What comes next?" },
+    ],
+    mathHint: "Math quests start with numbers to 5. Three right in a row moves you up a level. A wrong answer shows the count so you can try again.",
     shop: [["🟩", "Grass block", 6], ["🪵", "Oak logs", 8], ["🪨", "Cobblestone", 8], ["🧱", "Bricks", 10], ["🔥", "Torch", 10], ["🐔", "Chicken", 12], ["🐷", "Pig", 12], ["🐑", "Sheep", 14], ["🐄", "Cow", 14], ["🐺", "Wolf", 18], ["🐱", "Cat", 18], ["🐴", "Horse", 22], ["🐝", "Bee", 22], ["🪓", "Iron axe", 20], ["⛏️", "Diamond pickaxe", 30], ["⚔️", "Diamond sword", 32], ["🛡️", "Shield", 26], ["🏹", "Bow", 24], ["🛶", "Boat", 20], ["🚂", "Minecart", 28], ["🧟", "Zombie", 34], ["💀", "Skeleton", 36], ["🕷️", "Spider", 36], ["🟢", "Creeper", 40], ["🟪", "Enderman", 48], ["🏠", "Oak house", 44], ["🏰", "Castle", 70], ["🌋", "Nether portal", 80], ["🐉", "Ender Dragon", 120],
       ["🐢", "Turtle", 60], ["🦊", "Fox", 64], ["🐼", "Panda", 70], ["🦙", "Llama", 74], ["🐬", "Dolphin", 80], ["🐝", "Beehive", 84], ["🧙", "Witch", 90], ["👻", "Ghast", 96], ["🔥", "Blaze", 100], ["🐷", "Piglin", 104], ["🏯", "Fortress", 130], ["🗼", "Watchtower", 140], ["🌉", "Bridge", 150], ["🏟️", "Arena", 170], ["🚀", "Rocket ship", 190], ["🌕", "The End", 220], ["💎", "Diamond vault", 260], ["👑", "Crown of the realm", 320]],
     words: [
@@ -412,12 +428,13 @@ function speak(text, rate) {
 }
 const AUDIO_BASE = "audio/";
 const PHRASES = ["Yes!", "Nailed it!", "Super!", "You got it!", "Wow!", "Great job!", "Match!", "Try again.", "Not that one.", "Almost.", "Which word is missing?", "Find the word", "Level up!", "Perfect round!", "Great practice!", "Hello! Can you hear me? Sound is working.",
-  "Read the sign. Which picture matches?", "Craft the word. Tap the letter blocks in order.", "A creeper blew a letter off the sign. Which one goes back?", "Read the villager's sign out loud, then tap it.", "Which word is spelled wrong? Tap it.", "Now type it the right way.", "Which spelling is right?", "Write the missing word.", "Spell it with the magnets.", "Mission complete!", "Which sign says", "Sort the loot. Which chest does it go in?", "Minecart dash! Tap the cart that says", "Oh no, the cart got away! Try again.", "Build the sentence. Tap the words in order.", "The word is"];
+  "Read the sign. Which picture matches?", "Craft the word. Tap the letter blocks in order.", "A creeper blew a letter off the sign. Which one goes back?", "Read the villager's sign out loud, then tap it.", "Which word is spelled wrong? Tap it.", "Now type it the right way.", "Which spelling is right?", "Write the missing word.", "Spell it with the magnets.", "Mission complete!", "Which sign says", "Sort the loot. Which chest does it go in?", "Minecart dash! Tap the cart that says", "Oh no, the cart got away! Try again.", "Build the sentence. Tap the words in order.", "The word is",
+  "How many? Count them, then tap the number.", "Which chest has more? Tap it.", "Which chest has fewer? Tap it.", "Put them together. How many in all?", "A creeper blew some up! How many are left?", "Tap the number you hear.", "What number comes next?", "Which number is missing?", "Which number is bigger? Tap it.", "Count with me.", "plus", "take away", "equals what?", "The answer is", "Which number is smaller? Tap it."];
 const clipCache = {}; let playingClip = null; let clipsWork = null;
 function clip(k) { if (!clipCache[k]) { const a = new Audio(AUDIO_BASE + encodeURIComponent(k) + ".mp4"); a.preload = "auto"; clipCache[k] = a; } return clipCache[k]; }
 function allWords() { let out = []; for (const pr of Object.values(PROFILES)) out = out.concat(pr.words || [], pr.bonus || []); return out; }
 function keyText(k) {
-  if (k.startsWith("w_") || k.startsWith("l_")) return k.slice(2);
+  if (k.startsWith("w_") || k.startsWith("l_") || k.startsWith("n_")) return k.slice(2);
   if (k.startsWith("sc_")) { const it = PROFILES.camila.words.find(x => x.w === k.slice(3)); return it ? it.s.replace("___", it.w) : ""; }
   if (k.startsWith("s_")) { const it = (PROFILES.luca.words.concat(PROFILES.luca.bonus)).find(x => x.w === k.slice(2)); return it ? it.s.replace("___", it.w) : ""; }
   if (k.startsWith("p_")) return PHRASES[+k.slice(2)] || ""; return k;
@@ -489,8 +506,8 @@ function renderLobby() {
   $("#rooms").innerHTML = kid.rooms.map(r => { const L = lv(r.id); const t = kid.titles[Math.min(L.level - 1, kid.titles.length - 1)]; return `<button class="room" data-room="${r.id}"><span class="icon">${r.icon}</span><b>${r.name}</b><small>${r.blurb}</small><span class="lvl">Level ${L.level} · ${t} <span class="dots">${[0, 1, 2].map(i => `<i class="${i < L.streak ? "on" : ""}"></i>`).join("")}</span></span></button>`; }).join("")
     + `<button class="room all" data-room="all"><span class="icon">${kid.face}</span><b>Full shift</b><small>A mix of every job, one after another</small><span class="lvl">Best for a quick 10 minutes</span></button>`;
   $("#mathPanel").hidden = !kid.mathRooms;
-  if (kid.mathRooms) { $("#mathHint").textContent = kid.mathHint;
-    $("#mathRooms").innerHTML = kid.mathRooms.map(r => { const L = lv(r.id); return `<button class="room" data-room="${r.id}"><span class="icon">${r.icon}</span><b>${r.name}</b><small>${r.blurb}</small><span class="lvl">Level ${L.level} · ${MATH_GRADES[L.level - 1]} <span class="dots">${[0, 1, 2].map(i => `<i class="${i < L.streak ? "on" : ""}"></i>`).join("")}</span></span></button>`; }).join("")
+  if (kid.mathRooms) { $("#mathHint").textContent = kid.mathHint; $("#mathTitle").textContent = kid.mathTitle || "Rescue Math";
+    $("#mathRooms").innerHTML = kid.mathRooms.map(r => { const L = lv(r.id); return `<button class="room" data-room="${r.id}"><span class="icon">${r.icon}</span><b>${r.name}</b><small>${r.blurb}</small><span class="lvl">Level ${L.level} · ${grades()[L.level - 1]} <span class="dots">${[0, 1, 2].map(i => `<i class="${i < L.streak ? "on" : ""}"></i>`).join("")}</span></span></button>`; }).join("")
       + `<button class="room all" data-room="mathall"><span class="icon">🧮</span><b>Math shift</b><small>A mix of every math job</small><span class="lvl">Best for a quick 10 minutes</span></button>`; }
   $("#shelfTitle").textContent = kid.shelfTitle; $("#shopBtn").textContent = kid.shopName;
   const worlds = (S.worlds || []).map((n, i) => `<span class="worldbadge">🏆 World ${i + 1}: ${n} items</span>`).join(" ");
@@ -507,7 +524,7 @@ $("#shopBtn").onclick = renderShop; $("#shopBack").onclick = renderLobby; $("#gr
 /* ---------- engine ---------- */
 let roomSel, room, cur, idx, total, firstTry, locked, roundCoins, strikes, maxStrikes;
 const stage = $("#stage"), feedback = $("#feedback"), actions = $("#actions");
-const RENDER = { feed: renderMath, store: renderMath, frac: renderMath, place: renderMath, notes: renderNotes, sign: renderSign, magnets: renderMagnets, lab: renderLab, sentence: renderSentence, signs: renderSigns, load: renderLoad, fixsign: renderFixSign, tags: renderTags, orders: renderOrders, sort: renderSort, dash: renderDash };
+const RENDER = { feed: renderMath, store: renderMath, frac: renderMath, place: renderMath, count: renderMath, more: renderMath, craft: renderMath, blocks: renderMath, notes: renderNotes, sign: renderSign, magnets: renderMagnets, lab: renderLab, sentence: renderSentence, signs: renderSigns, load: renderLoad, fixsign: renderFixSign, tags: renderTags, orders: renderOrders, sort: renderSort, dash: renderDash };
 const NOLEVEL = { lab: true };
 const roomInfo = (id) => kid.rooms.concat(kid.mathRooms || []).find(x => x.id === id);
 const isStretch = () => !!(cur && cur.p && cur.p.stretch);
@@ -534,7 +551,7 @@ function fail() {
   locked = true; finalWrong(); const w = cur && cur.w;
   stage.querySelectorAll(".hidden-word").forEach(m => m.classList.remove("hidden-word"));
   if (cur && cur.math) { const p = cur.p; stage.querySelectorAll(".choice").forEach(b => { if (b.dataset.v === String(p.ans)) b.classList.add("win"); }); const h = $("#hint"); if (h) { h.hidden = false; h.innerHTML = `<b>Hint.</b> ${p.hint}`; }
-    const shown = p.choices ? p.choices.find(c => c.v === String(p.ans)).h : fmt(p.ans); setFeedback("bad", `Let's look together.<div class="fix">${shown}</div>${small(p.work)}`); }
+    const shown = p.choices ? p.choices.find(c => c.v === String(p.ans)).h : fmt(p.ans); setFeedback("bad", `Let's look together.<div class="fix">${shown}</div>${small(p.work)}`); if (p.say && /^\d+$/.test(String(p.ans))) say(["p_45", "n_" + p.ans]); }
   else { if (w) say(["p_31", "w_" + w, sKey(cur)]);
   setFeedback("bad", `Let's look together.${w ? `<div class="fix">${w}</div>` : ""}${cur && cur.s ? small(cur.s.replace("___", w)) : ""}`); }
   $("#bar").style.width = ((idx + 1) / total * 100) + "%"; idx++;
@@ -569,7 +586,7 @@ function wrongFinal(word, guessHtml, explain) {
   idx++; actions.innerHTML = `<button class="btn" id="nextBtn">Next →</button>`; $("#nextBtn").onclick = nextProblem; $("#nextBtn").focus();
 }
 function diffWord(guess, right) { return right.split("").map((ch, i) => guess[i] === ch ? ch : `<span class="miss">${ch}</span>`).join(""); }
-function showLevelUp() { const L = lv(room), r = roomInfo(room); stage.innerHTML = `<div class="levelup"><div class="e">${r.icon}✨</div><div class="t">Level ${L.level}!</div><p>${MATH[room] ? `You graduated! ${r.name} is now <b>${MATH_GRADES[L.level - 1]}</b> math.` : `You're now a <b>${kid.titles[Math.min(L.level - 1, kid.titles.length - 1)]}</b> at ${r.name}.`}${kid.bonus && L.level === 3 ? "<br>Bonus words are in play now." : ""}<br>Harder jobs, more ${kid.coinName}.</p></div>`; setFeedback("", ""); say(["p_12"]); actions.innerHTML = `<button class="btn mint" id="nextBtn">Let's go →</button>`; $("#nextBtn").onclick = nextProblem; $("#nextBtn").focus(); }
+function showLevelUp() { const L = lv(room), r = roomInfo(room); stage.innerHTML = `<div class="levelup"><div class="e">${r.icon}✨</div><div class="t">Level ${L.level}!</div><p>${MATH[room] ? `You graduated! ${r.name} is now <b>${grades()[L.level - 1]}</b> math.` : `You're now a <b>${kid.titles[Math.min(L.level - 1, kid.titles.length - 1)]}</b> at ${r.name}.`}${kid.bonus && L.level === 3 ? "<br>Bonus words are in play now." : ""}<br>Harder jobs, more ${kid.coinName}.</p></div>`; setFeedback("", ""); say(["p_12"]); actions.innerHTML = `<button class="btn mint" id="nextBtn">Let's go →</button>`; $("#nextBtn").onclick = nextProblem; $("#nextBtn").focus(); }
 function showMission() { stage.innerHTML = `<div class="levelup"><div class="e">${kid.face}🎉</div><div class="t">Mission complete!</div><p>You earned ${kid.mission} ${kid.coinName} today.<br>Bonus: +10 ${kid.coin}</p></div>`; setFeedback("", ""); say(["p_25"]); actions.innerHTML = `<button class="btn ghost" id="shopGo">${kid.shopName}</button><button class="btn mint" id="nextBtn">Keep going →</button>`; $("#nextBtn").onclick = nextProblem; $("#shopGo").onclick = renderShop; }
 function finish() {
   $("#bar").style.width = "100%"; $("#counter").textContent = "Done!";
@@ -811,13 +828,64 @@ const MATH = {
     const t = Math.random(); return t < .4 ? valueQ(5) : t < .75 ? roundQ(1000) : cmpQ(10000, 99999);
   },
 };
+/* ---------- Luca: Minecraft Math ----------
+   Pre-K number sense on the same engine as Rescue Math: tap only, pictures first, numerals later. A problem carries
+   `say` (recorded clips played when it opens and on "Hear it again") and `hintSay` (clips that count it out after the first miss).
+   L1 = numbers to 5 · L2 = to 10 · L3 = to 10 with a twist (fewer, take away, what comes next) · L4 = to 20 and number sentences
+   Count the Mobs: count a group in rows of 5, tap the number (3 choices at L1, then 4)
+   Bigger Chest:   two chests, tap the one with more · L1 counts written under each · L3 sometimes fewer · L4 numerals only
+   Crafting Table: two groups, how many in all · L3 a creeper blows some up (take away) · L4 the number sentence, pictures only in the hint
+   Number Blocks:  hear a number, tap it (L1-2) · L3 what comes next to 10 · L4 next or missing number to 20, sometimes counting down */
+const MOBS = [["🐑", "sheep", "sheep"], ["🐷", "pigs", "pig"], ["🐔", "chickens", "chicken"], ["🐄", "cows", "cow"], ["💎", "diamonds", "diamond"], ["🧱", "bricks", "brick"], ["🪵", "logs", "log"], ["🥕", "carrots", "carrot"], ["🍖", "steaks", "steak"], ["🔥", "torches", "torch"]];
+const plural = (k, mob) => `${k} ${k === 1 ? mob[2] : mob[1]}`;
+const grades = () => kid.mathGrades || MATH_GRADES;
+const countSay = (n) => Array.from({ length: n }, (_, i) => "n_" + (i + 1));
+/* a group of things in rows of 5. `num` writes 1, 2, 3… under each one; `gone` blows up the last k */
+function group(n, em, opt) { opt = opt || {}; let h = ""; for (let i = 0; i < n; i++) { const gone = opt.gone && i >= n - opt.gone; h += `<span class="${gone ? "gone" : ""}">${em}${opt.num ? `<small>${gone ? "&nbsp;" : i + 1}</small>` : ""}</span>`; if (i % 5 === 4 && i < n - 1) h += `<i class="br"></i>`; } return `<div class="pics mobs">${h}</div>`; }
+function track(lo, hi, marks) { return `<div class="ntrack">${Array.from({ length: hi - lo + 1 }, (_, i) => `<span class="${marks.includes(lo + i) ? "hi" : ""}">${lo + i}</span>`).join("")}</div>`; }
+/* n number tiles including the answer, neighbors first so the wrong ones are plausible */
+function numChoices(ans, lo, hi, n) { const s = new Set([ans]); for (const v of shuffle([ans - 1, ans + 1, ans - 2, ans + 2].filter(v => v >= lo && v <= hi))) { if (s.size >= n) break; s.add(v); } while (s.size < n) s.add(rnd(lo, hi)); return shuffle([...s]).map(v => ({ v: String(v), h: String(v) })); }
+Object.assign(MATH, {
+  count(L) {
+    const [em, nm] = pick(MOBS); const n = L === 1 ? rnd(1, 5) : L === 2 ? rnd(3, 10) : L === 3 ? rnd(6, 10) : rnd(10, 20);
+    const lo = L === 4 ? 8 : 1, hi = L === 1 ? 5 : L === 4 ? 20 : 10;
+    return { q: `How many ${nm}?${group(n, em)}`, ans: n, choices: numChoices(n, lo, hi, L === 1 ? 3 : 4), say: ["p_32"], hintSay: ["p_41", ...countSay(n)],
+      hint: `Touch each one and count out loud.${group(n, em, { num: true })}`, work: `${n} ${nm}` };
+  },
+  more(L) {
+    const [em, nm] = pick(MOBS); const hi = L === 1 ? 5 : L === 4 ? 20 : 10, gap = L === 1 ? 2 : 1, fewer = L >= 3 && Math.random() < .5, numbers = L === 4;
+    const a = rnd(1, hi); let b; do { b = rnd(1, hi); } while (Math.abs(a - b) < gap);
+    const ans = fewer ? Math.min(a, b) : Math.max(a, b), other = fewer ? Math.max(a, b) : Math.min(a, b);
+    return { q: numbers ? `Which number is ${fewer ? "smaller" : "bigger"}? Tap it.` : `Which chest has ${fewer ? "fewer" : "more"} ${nm}? Tap it.`, ans, say: [numbers ? (fewer ? "p_46" : "p_40") : fewer ? "p_34" : "p_33"],
+      choices: [a, b].map(k => numbers ? { v: String(k), h: String(k) } : { v: String(k), h: `${group(k, em)}${L === 1 ? `<small>${k}</small>` : ""}`, pic: true }),
+      hint: `Count each chest.${group(a, em, { num: true })}${group(b, em, { num: true })}${a} and ${b}. ${ans} is ${fewer ? "fewer" : "more"}.`, hintSay: ["n_" + a, "n_" + b], work: `${ans} is ${fewer ? "fewer" : "more"} than ${other}` };
+  },
+  craft(L) {
+    const mob = pick(MOBS), [em, nm] = mob; const take = L >= 3 && Math.random() < (L === 3 ? .6 : .5), hi = L === 1 ? 5 : 10;
+    if (!take) { const a = rnd(1, hi - 1), b = rnd(1, hi - a), s = a + b;
+      return { q: `${plural(a, mob)} and ${b} more. How many in all?${L === 4 ? `<span class="big">${a} + ${b} = ?</span>` : `<div class="two-groups">${group(a, em)}<b>+</b>${group(b, em)}</div>`}`, ans: s, choices: numChoices(s, L === 1 ? 1 : 2, hi, L === 1 ? 3 : 4), say: L === 4 ? ["n_" + a, "p_42", "n_" + b, "p_44"] : ["p_35"],
+        hint: `Count them all, starting at 1.${group(s, em, { num: true })}`, hintSay: ["p_41", ...countSay(s)], work: `${a} + ${b} = ${s}` }; }
+    const a = rnd(2, hi), b = rnd(1, a - 1), r = a - b;
+    return { q: `${a} ${nm}. A creeper blew up ${b}! How many are left?${L === 4 ? `<span class="big">${a} − ${b} = ?</span>` : group(a, em, { gone: b })}`, ans: r, choices: numChoices(r, 0, hi, 4), say: L === 4 ? ["n_" + a, "p_43", "n_" + b, "p_44"] : ["p_36"],
+      hint: `Count only the ones that are left.${group(a, em, { gone: b, num: true })}`, hintSay: ["p_41", ...countSay(r)], work: `${a} − ${b} = ${r}` };
+  },
+  blocks(L) {
+    if (L <= 2) { const hi = L === 1 ? 5 : 10, n = rnd(1, hi);
+      return { q: `Tap the number you hear.`, ans: n, choices: numChoices(n, 1, hi, L === 1 ? 3 : 4), say: ["p_37", "n_" + n], hint: `The number is <b>${n}</b>.${group(n, "🟩", { num: true })}`, hintSay: ["n_" + n], work: `${n}` }; }
+    if (L === 3 || Math.random() < .4) { const hi = L === 3 ? 10 : 20, a = rnd(1, hi - 2), n = a + 2;
+      return { q: `What number comes next?<span class="big">${a}, ${a + 1}, ?</span>`, ans: n, choices: numChoices(n, 1, hi, 4), say: ["p_38", "n_" + a, "n_" + (a + 1)], hint: `Count up from ${a}: ${a}, ${a + 1}, …${track(1, hi, [a, a + 1])}`, hintSay: ["p_41", "n_" + a, "n_" + (a + 1), "n_" + n], work: `${a}, ${a + 1}, ${n}` }; }
+    const down = Math.random() < .35, a = rnd(1, 18), seq = down ? [a + 2, a + 1, a] : [a, a + 1, a + 2], m = seq[1];
+    return { q: `Which number is missing?<span class="big">${seq[0]}, ?, ${seq[2]}</span>`, ans: m, choices: numChoices(m, 1, 20, 4), say: ["p_39", "n_" + seq[0], "n_" + seq[2]], hint: `Count ${down ? "down" : "up"} from ${seq[0]}.${track(1, 20, [seq[0], seq[2]])}`, hintSay: ["p_41", ...seq.map(v => "n_" + v)], work: seq.join(", ") };
+  },
+});
 function renderMath(pool, L) {
   const stretch = L < MAX_LEVEL && Math.random() < .2; const p = MATH[room](stretch ? L + 1 : L); p.stretch = stretch; cur = { math: true, p };
   const nc = p.choices ? p.choices.length : 0;
-  stage.innerHTML = `<div class="job">${stretch ? `<span class="stretch">⭐ Stretch problem · extra ${kid.coin}</span>` : ""}<div class="mq">${p.q}</div>${nc ? `<div class="choices ${nc === 4 ? "four" : nc === 2 ? "two" : ""}" id="choices">${p.choices.map(c => `<button class="choice" data-v="${c.v}">${c.h}</button>`).join("")}</div>` : `<input class="spell num" id="answer" inputmode="numeric" autocomplete="off" aria-label="Your answer" placeholder="?">`}<div class="rule" hidden id="hint"></div></div>`;
-  actions.innerHTML = `<button class="btn ghost small" id="readBtn">🔊 Read it</button>${nc ? "" : `<button class="btn" id="checkBtn">Check</button>`}`;
-  $("#readBtn").onclick = () => speak(strip(p.q.replace(/<div class="(pics|stack)"[\s\S]*?<\/div>|<svg[\s\S]*?<\/svg>/g, "")).replace(/= \?/g, "equals what?").replace(/(^|\s)\?(\s)/g, "$1what$2").replace(/◯/g, "blank"));
-  const wrong = (el) => { if (el) el.classList.add("out"); if (miss()) return; const h = $("#hint"); h.hidden = false; h.innerHTML = `<b>Hint.</b> ${p.hint}`; setFeedback("bad", "Not yet. Use the hint and try again."); };
+  stage.innerHTML = `<div class="job">${stretch ? `<span class="stretch">⭐ Stretch problem · extra ${kid.coin}</span>` : ""}<div class="mq">${p.q}</div>${nc ? `<div class="choices ${nc === 4 ? "four" : nc === 2 ? "two" : ""}" id="choices">${p.choices.map(c => `<button class="choice ${c.pic ? "pic side" : p.say ? "num" : ""}" data-v="${c.v}">${c.h}</button>`).join("")}</div>` : `<input class="spell num" id="answer" inputmode="numeric" autocomplete="off" aria-label="Your answer" placeholder="?">`}<div class="rule" hidden id="hint"></div></div>`;
+  actions.innerHTML = `<button class="btn ghost small" id="readBtn">🔊 ${p.say ? "Hear it again" : "Read it"}</button>${nc ? "" : `<button class="btn" id="checkBtn">Check</button>`}`;
+  $("#readBtn").onclick = () => p.say ? say(p.say) : speak(strip(p.q.replace(/<div class="(pics|stack)"[\s\S]*?<\/div>|<svg[\s\S]*?<\/svg>/g, "")).replace(/= \?/g, "equals what?").replace(/(^|\s)\?(\s)/g, "$1what$2").replace(/◯/g, "blank"));
+  if (p.say) setTimeout(() => say(p.say), 300);
+  const wrong = (el) => { if (el) el.classList.add("out"); if (miss()) return; const h = $("#hint"); h.hidden = false; h.innerHTML = `<b>Hint.</b> ${p.hint}`; if (p.hintSay) say(["p_7", ...p.hintSay]); setFeedback("bad", p.say ? "Not yet. Count again, then tap." : "Not yet. Use the hint and try again."); };
   if (nc) $("#choices").onclick = (e) => { const b = e.target.closest(".choice"); if (!b || locked) return; if (b.dataset.v === String(p.ans)) { b.classList.add("win"); correct(null, p.work); } else wrong(b); };
   else { const input = $("#answer"); input.focus();
     const check = () => { if (locked) return; const g = input.value.replace(/[^0-9]/g, ""); if (!g) return; if (+g === p.ans) correct(null, p.work); else { input.value = ""; input.classList.add("shake"); setTimeout(() => input.classList.remove("shake"), 400); wrong(); } };
@@ -967,8 +1035,8 @@ $("#itemGrid").onclick = (e) => { const b = e.target.closest(".item"); if (!b) r
 /* ---------- grown-ups ---------- */
 let resetArmed = false;
 function renderGrown() {
-  show("grown"); $("#grownHint").textContent = kidId === "camila" ? "Spelling jobs practice this week's list a different way each: dictation, proofreading, letter order, and the week's phonics pattern. Rescue Math starts at 2nd grade (Level 1) and adapts per job: three first-try answers move up, two problems that end wrong move down. A first wrong answer opens a picture hint (array, place columns, fraction bars, number line); solving after the hint pays half and resets the streak. About 1 in 5 math problems is a stretch from the next level that never costs a level. Levels: 1 = 2nd grade, 2 = 3rd grade, 3 = solid 3rd grade, 4 = 4th grade." : "Each quest practices sight-word recognition a different way: word-to-meaning, letter order, letter identity, visual memory, sorting, speed recognition, sentence order, and reading aloud. Two wrong taps end a word with no pay, so guessing through every option never works. Three ZPD layers: per-quest levels, bonus words at level 3, and missed words returning more often.";
-  $("#statTable").innerHTML = `<tr><th>Job</th><th>Level</th><th>Best</th><th>Done</th><th>First-try %</th></tr>` + kid.rooms.concat(kid.mathRooms || []).map(r => { const L = lv(r.id); return `<tr><td>${r.icon} ${r.name}</td><td>${NOLEVEL[r.id] ? "–" : L.level + " / " + MAX_LEVEL + (MATH[r.id] ? ` (${MATH_GRADES[L.level - 1]})` : "")}</td><td>${NOLEVEL[r.id] ? "–" : L.best}</td><td>${L.attempts}</td><td>${L.attempts ? Math.round(L.correct / L.attempts * 100) + "%" : "–"}</td></tr>`; }).join("") + `<tr><td><b>Words seen right at least once</b></td><td colspan="4">${Object.keys(S.mastered).length} of ${WORDS.length + (kid.bonus ? kid.bonus.length : 0)}</td></tr>`;
+  show("grown"); $("#grownHint").textContent = kidId === "camila" ? "Spelling jobs practice this week's list a different way each: dictation, proofreading, letter order, and the week's phonics pattern. Rescue Math starts at 2nd grade (Level 1) and adapts per job: three first-try answers move up, two problems that end wrong move down. A first wrong answer opens a picture hint (array, place columns, fraction bars, number line); solving after the hint pays half and resets the streak. About 1 in 5 math problems is a stretch from the next level that never costs a level. Levels: 1 = 2nd grade, 2 = 3rd grade, 3 = solid 3rd grade, 4 = 4th grade." : "Each quest practices sight-word recognition a different way: word-to-meaning, letter order, letter identity, visual memory, sorting, speed recognition, sentence order, and reading aloud. Two wrong taps end a word with no pay, so guessing through every option never works. Three ZPD layers: per-quest levels, bonus words at level 3, and missed words returning more often. Minecraft Math is four tap-only number-sense quests (counting, more and fewer, putting together and taking away, number order) that start with numbers to 5 and climb to 20 on the same three-in-a-row rule; a first wrong answer shows the pictures numbered and counts them out loud.";
+  $("#statTable").innerHTML = `<tr><th>Job</th><th>Level</th><th>Best</th><th>Done</th><th>First-try %</th></tr>` + kid.rooms.concat(kid.mathRooms || []).map(r => { const L = lv(r.id); return `<tr><td>${r.icon} ${r.name}</td><td>${NOLEVEL[r.id] ? "–" : L.level + " / " + MAX_LEVEL + (MATH[r.id] ? ` (${grades()[L.level - 1]})` : "")}</td><td>${NOLEVEL[r.id] ? "–" : L.best}</td><td>${L.attempts}</td><td>${L.attempts ? Math.round(L.correct / L.attempts * 100) + "%" : "–"}</td></tr>`; }).join("") + `<tr><td><b>Words seen right at least once</b></td><td colspan="4">${Object.keys(S.mastered).length} of ${WORDS.length + (kid.bonus ? kid.bonus.length : 0)}</td></tr>`;
   $("#resetMsg").textContent = ""; $("#resetBtn").textContent = "Reset this player"; resetArmed = false; renderSync();
 }
 $("#resetBtn").onclick = () => { if (!resetArmed) { resetArmed = true; $("#resetBtn").textContent = "Tap again to confirm"; $("#resetMsg").textContent = `Clears ${kid.name}'s ${kid.coinName}, shelf and levels.`; return; } S = fresh(); S.day = today; save(); renderGrown(); $("#resetMsg").textContent = "Reset done."; };

@@ -3,6 +3,6 @@
 Two small browser games, no build step, no accounts. Progress saves in the browser.
 
 - `/` Sparkle Boutique: adaptive 2nd-grade math (coins, add/subtract, patterns, charts)
-- `/words/` Word Quest: weekly spelling list + pre-K sight words; Camila also gets Rescue Math (adaptive, starts at 2nd grade)
+- `/words/` Word Quest: weekly spelling list + pre-K sight words; Camila also gets Rescue Math (adaptive, starts at 2nd grade), Luca gets Minecraft Math (pre-K number sense, tap only, numbers to 5 up to 20)
 
 Word Quest progress syncs across computers through Supabase project `kids-games` (mvvjoaluidddzjifxkai). Turn it on in the grown-ups panel; the family code rides in the link as `?sync=CODE`. Schema: `words/sync-setup.sql`.
